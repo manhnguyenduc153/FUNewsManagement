@@ -17,6 +17,8 @@ namespace NguyenDucManh_SE1884_A01_BE.Dto
         public string ParentCategoryName { get; set; } = null!;
 
         public bool? IsActive { get; set; }
+
+        public int ArticleCount { get; set; }
     }
 
     public class CategorySaveDto

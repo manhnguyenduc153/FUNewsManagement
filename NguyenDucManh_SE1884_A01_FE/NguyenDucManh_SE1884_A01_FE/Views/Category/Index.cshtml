@@ -84,9 +84,10 @@
                             <tr>
                                 <th style="width: 8%">ID</th>
                                 <th style="width: 20%">Category Name</th>
-                                <th style="width: 25%">Description</th>
-                                <th style="width: 15%">Parent Category</th>
-                                <th style="width: 12%">Status</th>
+                                <th style="width: 20%">Description</th>
+                                <th style="width: 12%">Parent Category</th>
+                                <th style="width: 10%">Articles</th>
+                                <th style="width: 10%">Status</th>
                                 <th style="width: 20%" class="text-center">Actions</th>
                             </tr>
                         </thead>
@@ -100,6 +101,9 @@
                                     </td>
                                     <td>@(item.CategoryDesciption ?? "")</td>
                                     <td>@(item.ParentCategoryName ?? "None")</td>
+                                    <td>
+                                        <span class="badge bg-primary">@item.ArticleCount</span>
+                                    </td>
                                     <td>
                                         @if (item.IsActive == true)
                                         {

@@ -2,22 +2,26 @@
 
 <!-- CategoryId (hidden) -->
 <input type="hidden" name="CategoryId" value="@Model.CategoryId" />
+<input type="hidden" id="originalParentCategoryId" value="@Model.ParentCategoryId" />
 
 <div class="modal-body">
     <!-- Category Name -->
     <div class="mb-3">
         <label for="categoryName" class="form-label">Category Name <span class="text-danger">*</span></label>
         <input type="text" class="form-control" id="categoryName" name="CategoryName" 
-               value="@Model.CategoryName" required 
+               value="@Model.CategoryName" required maxlength="100"
                placeholder="Enter category name">
+        <span asp-validation-for="CategoryName" class="text-danger"></span>
         <small class="form-text text-muted">e.g., Technology, Business, Sports</small>
     </div>
 
     <!-- Description -->
     <div class="mb-3">
-        <label for="categoryDescription" class="form-label">Description</label>
+        <label for="categoryDescription" class="form-label">Description <span class="text-danger">*</span></label>
         <textarea class="form-control" id="categoryDescription" name="CategoryDesciption" rows="3" 
+                  required maxlength="500"
                   placeholder="Enter description">@Model.CategoryDesciption</textarea>
+        <span asp-validation-for="CategoryDesciption" class="text-danger"></span>
     </div>
 
     <!-- Parent Category -->
@@ -27,6 +31,9 @@
                value="@(Model.ParentCategoryId > 0 ? Model.ParentCategoryId : "")" 
                placeholder="Leave empty for top-level category">
         <small class="form-text text-muted">Optional: Set to create sub-categories</small>
+        <small id="parentCategoryWarning" class="form-text text-warning d-none">
+            <i class="bi bi-exclamation-triangle"></i> Cannot change parent category if category has articles
+        </small>
     </div>
 
     <!-- Is Active -->
@@ -48,3 +55,21 @@
         <i class="bi bi-save"></i> @(Model.CategoryId > 0 ? "Update" : "Create")
     </button>
 </div>
+
+<script>
+$(document).ready(function() {
+    const isEditMode = @(Model.CategoryId > 0 ? "true" : "false");
+    const originalParentId = $('#originalParentCategoryId').val();
+    
+    if (isEditMode) {
+        $('#parentCategoryId').on('change', function() {
+            const newValue = $(this).val();
+            if (newValue != originalParentId) {
+                $('#parentCategoryWarning').removeClass('d-none');
+            } else {
+                $('#parentCategoryWarning').addClass('d-none');
+            }
+        });
+    }
+});
+</script>

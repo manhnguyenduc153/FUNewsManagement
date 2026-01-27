@@ -41,20 +41,16 @@ namespace NguyenDucManh_SE1884_A01_BE.Repositories
                 .OrderByDescending(x => x.CategoryId)
                 .Skip((searchDto.PageIndex - 1) * searchDto.PageSize)
                 .Take(searchDto.PageSize)
-                .GroupJoin(
-                    FindAll(),
-                    c => c.ParentCategoryId,
-                    p => p.CategoryId,
-                    (c, parents) => new CategoryDto
-                    {
-                        CategoryId = c.CategoryId,
-                        CategoryName = c.CategoryName,
-                        CategoryDesciption = c.CategoryDesciption,
-                        ParentCategoryId = c.ParentCategoryId,
-                        ParentCategoryName = parents.Select(p => p.CategoryName).FirstOrDefault(),
-                        IsActive = c.IsActive
-                    }
-                )
+                .Select(c => new CategoryDto
+                {
+                    CategoryId = c.CategoryId,
+                    CategoryName = c.CategoryName,
+                    CategoryDesciption = c.CategoryDesciption,
+                    ParentCategoryId = c.ParentCategoryId,
+                    ParentCategoryName = c.ParentCategory != null ? c.ParentCategory.CategoryName : null,
+                    IsActive = c.IsActive,
+                    ArticleCount = c.NewsArticles.Count
+                })
                 .ToListAsync();
 
             return new PagingResponse<CategoryDto>
@@ -79,7 +75,11 @@ namespace NguyenDucManh_SE1884_A01_BE.Repositories
                 c.CategoryId != excludeCategoryId);
         }
 
-        
-        public Task<Category?> GetByIdAsync(short id) => GetByIdAsync<short>(id);
+        public async Task<Category?> GetByIdAsync(short id)
+        {
+            return await FindAll()
+                .Include(c => c.NewsArticles)
+                .FirstOrDefaultAsync(c => c.CategoryId == id);
+        }
     }
 }

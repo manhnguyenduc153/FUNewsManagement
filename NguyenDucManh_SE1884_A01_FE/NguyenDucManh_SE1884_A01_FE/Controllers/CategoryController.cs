@@ -68,6 +68,18 @@ namespace Frontend.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Save(CategorySaveDto dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.CategoryName))
+            {
+                TempData["ErrorMessage"] = "Category name is required";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.CategoryDesciption))
+            {
+                TempData["ErrorMessage"] = "Description is required";
+                return RedirectToAction(nameof(Index));
+            }
+
             if (!ModelState.IsValid)
             {
                 TempData["ErrorMessage"] = "Invalid input";
