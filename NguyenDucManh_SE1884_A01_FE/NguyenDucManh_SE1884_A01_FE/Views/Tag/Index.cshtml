@@ -99,6 +99,10 @@
                                     <td>@(item.Note ?? "")</td>
                                     <td class="text-center">
                                         <div class="btn-group" role="group">
+                                            <a asp-action="Articles" asp-route-id="@item.TagId" 
+                                               class="btn btn-sm btn-info" title="View Articles">
+                                                Articles
+                                            </a>
                                             <button type="button" class="btn btn-sm btn-warning" 
                                                     data-bs-toggle="modal" 
                                                     data-bs-target="#createEditModal"

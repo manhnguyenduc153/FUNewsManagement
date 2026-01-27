@@ -122,5 +122,11 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
 
             return ApiResponse<bool>.Ok(true, "Deleted successfully");
         }
+
+        public async Task<IEnumerable<NewsArticleDto>> GetArticlesByTagAsync(int tagId)
+        {
+            var articles = await _tagRepository.GetArticlesByTagAsync(tagId);
+            return articles.Adapt<IEnumerable<NewsArticleDto>>();
+        }
     }
 }

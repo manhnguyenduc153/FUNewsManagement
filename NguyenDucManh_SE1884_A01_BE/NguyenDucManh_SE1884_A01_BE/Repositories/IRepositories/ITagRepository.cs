@@ -16,6 +16,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Repositories.IRepositories
         Task<bool> ExistsByNameAsync(string tagName);
         Task<bool> ExistsByNameAsync(string tagName, int excludeTagId);
         Task<int> SaveChangesAsync();
+        Task<IEnumerable<NewsArticle>> GetArticlesByTagAsync(int tagId);
     }
 
 }

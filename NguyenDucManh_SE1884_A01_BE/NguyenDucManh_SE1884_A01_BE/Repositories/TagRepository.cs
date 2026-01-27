@@ -63,6 +63,16 @@ namespace NguyenDucManh_SE1884_A01_BE.Repositories
                 .Include(x => x.NewsArticles)
                 .FirstOrDefaultAsync(x => x.TagId == id);
         }
+
+        public async Task<IEnumerable<NewsArticle>> GetArticlesByTagAsync(int tagId)
+        {
+            return await _dbContext.Set<Tag>()
+                .Where(t => t.TagId == tagId)
+                .SelectMany(t => t.NewsArticles)
+                .Include(a => a.Category)
+                .Include(a => a.CreatedBy)
+                .ToListAsync();
+        }
     }
 
 }

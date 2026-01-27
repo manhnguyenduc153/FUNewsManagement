@@ -131,5 +131,23 @@ namespace Frontend.Controllers
                 return PartialView("_CreateEditForm", new TagSaveDto());
             }
         }
+
+        // GET: Tag/Articles/5
+        public async Task<IActionResult> Articles(int id)
+        {
+            var tag = await _tagService.GetByIdAsync(id);
+            if (tag == null)
+            {
+                TempData["ErrorMessage"] = "Tag not found";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var articles = await _tagService.GetArticlesByTagAsync(id);
+            
+            ViewBag.TagName = tag.TagName;
+            ViewBag.TagId = id;
+            
+            return View(articles);
+        }
     }
 }

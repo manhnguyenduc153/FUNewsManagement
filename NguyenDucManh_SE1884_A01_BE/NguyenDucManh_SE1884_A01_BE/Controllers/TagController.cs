@@ -60,5 +60,14 @@ namespace NguyenDucManh_SE1884_A01_BE.Controllers.Api
             var response = await _tagService.DeleteAsync(id);
             return StatusCode(response.StatusCode, response);
         }
+
+        
+        [AllowAnonymous]
+        [HttpGet("{id:int}/articles")]
+        public async Task<IActionResult> GetArticlesByTag(int id)
+        {
+            var result = await _tagService.GetArticlesByTagAsync(id);
+            return Ok(ApiResponse<object>.Ok(result, "Get articles successfully"));
+        }
     }
 }

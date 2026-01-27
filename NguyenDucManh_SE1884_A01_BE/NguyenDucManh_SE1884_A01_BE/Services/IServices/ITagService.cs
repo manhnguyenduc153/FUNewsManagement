@@ -12,5 +12,6 @@ namespace NguyenDucManh_SE1884_A01_BE.Services.IServices
 
         Task<ApiResponse<TagDto>> CreateOrEditAsync(TagSaveDto dto);
         Task<ApiResponse<bool>> DeleteAsync(int id);
+        Task<IEnumerable<NewsArticleDto>> GetArticlesByTagAsync(int tagId);
     }
 }

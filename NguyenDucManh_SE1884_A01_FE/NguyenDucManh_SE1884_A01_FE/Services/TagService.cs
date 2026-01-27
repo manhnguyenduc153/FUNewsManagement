@@ -143,5 +143,28 @@ namespace Frontend.Services
                 return (false, $"Error: {ex.Message}");
             }
         }
+
+        public async Task<List<NewsArticleDto>> GetArticlesByTagAsync(int tagId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"Tags/{tagId}/articles");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new List<NewsArticleDto>();
+                }
+
+                var apiResponse = await response.Content
+                    .ReadFromJsonAsync<ApiResponse<List<NewsArticleDto>>>();
+
+                return apiResponse?.Data ?? new List<NewsArticleDto>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetArticlesByTagAsync: {ex.Message}");
+                return new List<NewsArticleDto>();
+            }
+        }
     }
 }

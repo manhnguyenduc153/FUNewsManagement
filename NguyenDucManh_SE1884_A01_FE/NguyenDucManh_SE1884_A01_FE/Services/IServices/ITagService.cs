@@ -12,5 +12,6 @@ namespace Frontend.Services.IServices
         Task<TagDto?> GetByIdAsync(int id);
         Task<(bool Success, string Message, TagDto? Data)> CreateOrEditAsync(TagSaveDto dto);
         Task<(bool Success, string Message)> DeleteAsync(int id);
+        Task<List<NewsArticleDto>> GetArticlesByTagAsync(int tagId);
     }
 }
