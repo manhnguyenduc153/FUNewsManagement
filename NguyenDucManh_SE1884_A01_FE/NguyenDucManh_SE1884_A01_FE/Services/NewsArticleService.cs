@@ -260,5 +260,26 @@ namespace Frontend.Services
                 return (false, $"Error: {ex.Message}");
             }
         }
+
+        public async Task<List<NewsArticleDto>> GetRelatedArticlesAsync(string newsArticleId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"NewsArticles/{newsArticleId}/related");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new List<NewsArticleDto>();
+                }
+
+                var articles = await response.Content.ReadFromJsonAsync<List<NewsArticleDto>>();
+                return articles ?? new List<NewsArticleDto>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetRelatedArticlesAsync: {ex.Message}");
+                return new List<NewsArticleDto>();
+            }
+        }
     }
 }

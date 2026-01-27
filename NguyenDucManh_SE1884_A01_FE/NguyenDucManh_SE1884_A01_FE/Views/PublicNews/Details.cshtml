@@ -1,0 +1,90 @@
+@using Assignmen_PRN232__.Dto
+@model NewsArticleDto
+
+@{
+    ViewData["Title"] = Model.NewsTitle;
+    var relatedArticles = ViewBag.RelatedArticles as List<NewsArticleDto> ?? new List<NewsArticleDto>();
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <a asp-action="Index" class="btn btn-sm btn-secondary mb-3">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                    
+                    <h1 class="card-title">@Model.NewsTitle</h1>
+                    
+                    <div class="text-muted mb-3">
+                        <small>
+                            <i class="bi bi-calendar"></i> @Model.CreatedDate?.ToString("dd/MM/yyyy HH:mm")
+                            | <i class="bi bi-person"></i> @(Model.CreatedByName ?? "Unknown")
+                            | <i class="bi bi-folder"></i> @(Model.CategoryName ?? "N/A")
+                        </small>
+                    </div>
+
+                    @if (Model.Tags != null && Model.Tags.Any())
+                    {
+                        <div class="mb-3">
+                            @foreach (var tag in Model.Tags)
+                            {
+                                <span class="badge bg-secondary me-1">@tag.TagName</span>
+                            }
+                        </div>
+                    }
+
+                    <hr />
+
+                    <h4 class="text-primary">@Model.Headline</h4>
+                    
+                    <div class="mt-3">
+                        @Html.Raw(Model.NewsContent)
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.NewsSource))
+                    {
+                        <div class="mt-4 text-muted">
+                            <small><strong>Source:</strong> @Model.NewsSource</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar - Related News -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-newspaper"></i> Related News</h5>
+                </div>
+                <div class="card-body">
+                    @if (relatedArticles.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var article in relatedArticles)
+                            {
+                                <a asp-action="Details" asp-route-id="@article.NewsArticleId" 
+                                   class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">@article.NewsTitle</h6>
+                                    </div>
+                                    <p class="mb-1 text-muted small">@article.Headline</p>
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar"></i> @article.CreatedDate?.ToString("dd/MM/yyyy")
+                                    </small>
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No related articles found</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

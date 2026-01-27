@@ -43,6 +43,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Controllers.Api
         }
 
         
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
@@ -90,6 +91,15 @@ namespace NguyenDucManh_SE1884_A01_BE.Controllers.Api
         {
             var response = await _newsArticleService.RemoveTagAsync(id, tagId);
             return StatusCode(response.StatusCode, response);
+        }
+
+        
+        [AllowAnonymous]
+        [HttpGet("{id}/related")]
+        public async Task<IActionResult> GetRelatedArticles(string id)
+        {
+            var result = await _newsArticleService.GetRelatedArticlesAsync(id);
+            return Ok(result);
         }
     }
 }

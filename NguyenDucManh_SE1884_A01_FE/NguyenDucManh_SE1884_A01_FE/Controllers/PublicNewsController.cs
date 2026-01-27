@@ -21,5 +21,20 @@ namespace Frontend.Controllers
             var result = await _newsArticleService.GetPublicListPagingAsync(searchDto);
             return View(result);
         }
+
+        public async Task<IActionResult> Details(string id)
+        {
+            var article = await _newsArticleService.GetByIdAsync(id);
+            if (article == null)
+            {
+                TempData["ErrorMessage"] = "Article not found";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var relatedArticles = await _newsArticleService.GetRelatedArticlesAsync(id);
+            ViewBag.RelatedArticles = relatedArticles;
+
+            return View(article);
+        }
     }
 }

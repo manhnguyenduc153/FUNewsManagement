@@ -65,7 +65,11 @@
                             {
                                 <tr>
                                     <td><small>@(item.NewsArticleId ?? "N/A")</small></td>
-                                    <td><span class="badge bg-info text-dark">@(item.NewsTitle ?? "N/A")</span></td>
+                                    <td>
+                                        <a asp-action="Details" asp-route-id="@item.NewsArticleId" class="text-decoration-none">
+                                            <span class="badge bg-info text-dark">@(item.NewsTitle ?? "N/A")</span>
+                                        </a>
+                                    </td>
                                     <td>@(item.Headline ?? "")</td>
                                     <td>@(item.CategoryName ?? "N/A")</td>
                                     <td>

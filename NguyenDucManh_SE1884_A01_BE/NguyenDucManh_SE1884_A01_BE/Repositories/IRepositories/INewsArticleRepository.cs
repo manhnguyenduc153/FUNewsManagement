@@ -15,5 +15,6 @@ namespace NguyenDucManh_SE1884_A01_BE.Repositories.IRepositories
         Task DeleteAsync(NewsArticle newsArticle);
         Task<bool> ExistsByIdAsync(string newsArticleId);
         Task<int> SaveChangesAsync();
+        Task<IEnumerable<NewsArticle>> GetRelatedArticlesAsync(string newsArticleId);
     }
 }

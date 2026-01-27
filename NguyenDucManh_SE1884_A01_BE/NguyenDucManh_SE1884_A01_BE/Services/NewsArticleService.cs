@@ -331,5 +331,11 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
             await _newsArticleRepository.SaveChangesAsync();
             return ApiResponse<bool>.Ok(true, "Tag removed successfully");
         }
+
+        public async Task<IEnumerable<NewsArticleDto>> GetRelatedArticlesAsync(string newsArticleId)
+        {
+            var articles = await _newsArticleRepository.GetRelatedArticlesAsync(newsArticleId);
+            return articles.Adapt<IEnumerable<NewsArticleDto>>();
+        }
     }
 }

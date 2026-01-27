@@ -106,5 +106,25 @@ namespace NguyenDucManh_SE1884_A01_BE.Repositories
                 .Include(x => x.CreatedBy)
                 .FirstOrDefaultAsync(x => x.NewsArticleId == id);
         }
+
+        public async Task<IEnumerable<NewsArticle>> GetRelatedArticlesAsync(string newsArticleId)
+        {
+            var currentArticle = await GetByIdAsync(newsArticleId);
+            if (currentArticle == null)
+                return new List<NewsArticle>();
+
+            var relatedArticles = await _dbContext.Set<NewsArticle>()
+                .Include(x => x.Category)
+                .Include(x => x.CreatedBy)
+                .Include(x => x.Tags)
+                .Where(x => x.NewsArticleId != newsArticleId && x.NewsStatus == true)
+                .Where(x => x.CategoryId == currentArticle.CategoryId || 
+                            x.Tags.Any(t => currentArticle.Tags.Select(ct => ct.TagId).Contains(t.TagId)))
+                .OrderByDescending(x => x.CreatedDate)
+                .Take(3)
+                .ToListAsync();
+
+            return relatedArticles;
+        }
     }
 }
