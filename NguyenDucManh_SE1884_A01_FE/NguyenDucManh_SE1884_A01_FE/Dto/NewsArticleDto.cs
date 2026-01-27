@@ -30,6 +30,8 @@ namespace Assignmen_PRN232__.Dto
 
         public short? UpdatedById { get; set; }
 
+        public string? UpdatedByName { get; set; }
+
         public DateTime? ModifiedDate { get; set; }
 
         public List<TagDto> Tags { get; set; } = new List<TagDto>();

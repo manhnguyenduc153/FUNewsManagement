@@ -123,11 +123,11 @@
                                 <th style="width: 12%">Title</th>
                                 <th style="width: 10%">Sources</th>
                                 <th style="width: 10%">Category</th>
-                                <th style="width: 15%">Tags</th>
+                                <th style="width: 12%">Tags</th>
                                 <th style="width: 10%">Created By</th>
-                                <th style="width: 10%">Created Date</th>
+                                <th style="width: 10%">Last Editor</th>
                                 <th style="width: 8%">Status</th>
-                                <th style="width: 17%" class="text-center">Actions</th>
+                                <th style="width: 10%" class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -166,7 +166,16 @@
                                     </td>
                                     <td>@(item.CreatedByName ?? "N/A")</td>
                                     <td>
-                                        @(item.CreatedDate?.ToString("dd/MM/yyyy") ?? "")
+                                        @if (item.UpdatedById.HasValue && item.UpdatedById > 0)
+                                        {
+                                            <span class="text-warning" title="Modified: @item.ModifiedDate?.ToString("dd/MM/yyyy HH:mm")">
+                                                <i class="bi bi-pencil-square"></i> @(item.UpdatedByName ?? "N/A")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
                                     </td>
                                     <td>
                                         @if (item.NewsStatus == true)

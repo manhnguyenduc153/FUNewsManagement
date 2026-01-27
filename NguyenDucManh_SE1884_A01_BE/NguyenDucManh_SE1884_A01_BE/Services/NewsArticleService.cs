@@ -51,6 +51,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
                 CreatedById = na.CreatedById,
                 CreatedByName = na.CreatedBy?.AccountName,
                 UpdatedById = na.UpdatedById,
+                UpdatedByName = na.UpdatedBy?.AccountName,
                 ModifiedDate = na.ModifiedDate,
                 Tags = na.Tags.Adapt<ICollection<TagDto>>()
             }).ToList();
@@ -120,6 +121,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
                 CreatedById = newsArticle.CreatedById,
                 CreatedByName = newsArticle.CreatedBy?.AccountName,
                 UpdatedById = newsArticle.UpdatedById,
+                UpdatedByName = newsArticle.UpdatedBy?.AccountName,
                 ModifiedDate = newsArticle.ModifiedDate,
                 Tags = newsArticle.Tags.Adapt<ICollection<TagDto>>()
             };
@@ -200,7 +202,15 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
             if (existing == null)
                 return ApiResponse<NewsArticleDto>.Fail("News article not found");
 
+            // Lưu giá trị cũ
+            var originalCreatedById = existing.CreatedById;
+            var originalCreatedDate = existing.CreatedDate;
+
             dto.Adapt(existing);
+            
+            // Khôi phục giá trị không được thay đổi
+            existing.CreatedById = originalCreatedById;
+            existing.CreatedDate = originalCreatedDate;
             existing.ModifiedDate = DateTime.Now;
 
             

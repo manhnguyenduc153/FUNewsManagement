@@ -21,6 +21,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Repositories
                 .Include(x => x.Category)
                 .Include(x => x.Tags)
                 .Include(x => x.CreatedBy)
+                .Include(x => x.UpdatedBy)
                 .AsNoTracking()
                 .Where(x => x.Category != null && x.Category.IsActive.Value);
 
@@ -104,6 +105,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Repositories
                 .Include(x => x.Tags)
                 .Include(x => x.Category)
                 .Include(x => x.CreatedBy)
+                .Include(x => x.UpdatedBy)
                 .FirstOrDefaultAsync(x => x.NewsArticleId == id);
         }
 

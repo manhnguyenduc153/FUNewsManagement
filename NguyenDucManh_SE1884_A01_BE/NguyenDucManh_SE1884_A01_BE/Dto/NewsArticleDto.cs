@@ -32,6 +32,8 @@ namespace NguyenDucManh_SE1884_A01_BE.Dto
 
         public short? UpdatedById { get; set; }
 
+        public string? UpdatedByName { get; set; }
+
         public DateTime? ModifiedDate { get; set; }
 
         public ICollection<TagDto> Tags { get; set; } = new List<TagDto>();
