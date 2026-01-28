@@ -49,9 +49,9 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
                 CategoryName = na.Category?.CategoryName,
                 NewsStatus = na.NewsStatus,
                 CreatedById = na.CreatedById,
-                CreatedByName = na.CreatedBy?.AccountName,
+                CreatedByName = na.CreatedById == 0 ? "Admin" : na.CreatedBy?.AccountName,
                 UpdatedById = na.UpdatedById,
-                UpdatedByName = na.UpdatedBy?.AccountName,
+                UpdatedByName = na.UpdatedById == 0 ? "Admin" : na.UpdatedBy?.AccountName,
                 ModifiedDate = na.ModifiedDate,
                 Tags = na.Tags.Adapt<ICollection<TagDto>>()
             }).ToList();
@@ -119,9 +119,9 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
                 CategoryName = newsArticle.Category?.CategoryName,
                 NewsStatus = newsArticle.NewsStatus,
                 CreatedById = newsArticle.CreatedById,
-                CreatedByName = newsArticle.CreatedBy?.AccountName,
+                CreatedByName = newsArticle.CreatedById == 0 ? "Admin" : newsArticle.CreatedBy?.AccountName,
                 UpdatedById = newsArticle.UpdatedById,
-                UpdatedByName = newsArticle.UpdatedBy?.AccountName,
+                UpdatedByName = newsArticle.UpdatedById == 0 ? "Admin" : newsArticle.UpdatedBy?.AccountName,
                 ModifiedDate = newsArticle.ModifiedDate,
                 Tags = newsArticle.Tags.Adapt<ICollection<TagDto>>()
             };
@@ -174,11 +174,14 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
             entity.CreatedDate = DateTime.Now;
             entity.NewsStatus = entity.NewsStatus ?? true;
 
-            
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrEmpty(userId) && short.TryParse(userId, out var accountId))
             {
                 entity.CreatedById = accountId;
+            }
+            else
+            {
+                entity.CreatedById = 0;
             }
 
             await _newsArticleRepository.AddAsync(entity);
@@ -202,25 +205,24 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
             if (existing == null)
                 return ApiResponse<NewsArticleDto>.Fail("News article not found");
 
-            // Lưu giá trị cũ
-            var originalCreatedById = existing.CreatedById;
-            var originalCreatedDate = existing.CreatedDate;
-
-            dto.Adapt(existing);
-            
-            // Khôi phục giá trị không được thay đổi
-            existing.CreatedById = originalCreatedById;
-            existing.CreatedDate = originalCreatedDate;
+            existing.NewsTitle = dto.NewsTitle;
+            existing.Headline = dto.Headline;
+            existing.NewsContent = dto.NewsContent;
+            existing.NewsSource = dto.NewsSource;
+            existing.CategoryId = dto.CategoryId;
+            existing.NewsStatus = dto.NewsStatus;
             existing.ModifiedDate = DateTime.Now;
 
-            
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrEmpty(userId) && short.TryParse(userId, out var accountId))
             {
                 existing.UpdatedById = accountId;
             }
+            else
+            {
+                existing.UpdatedById = 0;
+            }
 
-            await _newsArticleRepository.UpdateAsync(existing);
             await _newsArticleRepository.SaveChangesAsync();
 
             return ApiResponse<NewsArticleDto>.Ok(
@@ -292,14 +294,24 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
 
         public async Task<ApiResponse<bool>> DeleteAsync(string id)
         {
-            var newsArticle = await _newsArticleRepository.GetByIdAsync(id);
-            if (newsArticle == null)
-                return ApiResponse<bool>.Fail("News article not found");
+            try
+            {
+                var newsArticle = await _newsArticleRepository.GetByIdAsync(id);
+                if (newsArticle == null)
+                    return ApiResponse<bool>.Fail("News article not found");
 
-            await _newsArticleRepository.DeleteAsync(newsArticle);
-            await _newsArticleRepository.SaveChangesAsync();
+                newsArticle.Tags.Clear();
+                await _newsArticleRepository.SaveChangesAsync();
 
-            return ApiResponse<bool>.Ok(true, "Deleted successfully");
+                await _newsArticleRepository.DeleteAsync(newsArticle);
+                await _newsArticleRepository.SaveChangesAsync();
+
+                return ApiResponse<bool>.Ok(true, "Deleted successfully");
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return ApiResponse<bool>.Ok(false, "Deleted failed");
+            }
         }
 
         public async Task<ApiResponse<bool>> AddTagAsync(string newsArticleId, int tagId)
