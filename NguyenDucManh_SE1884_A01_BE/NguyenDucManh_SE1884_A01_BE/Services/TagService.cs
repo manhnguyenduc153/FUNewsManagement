@@ -126,7 +126,23 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
         public async Task<IEnumerable<NewsArticleDto>> GetArticlesByTagAsync(int tagId)
         {
             var articles = await _tagRepository.GetArticlesByTagAsync(tagId);
-            return articles.Adapt<IEnumerable<NewsArticleDto>>();
+            return articles.Select(na => new NewsArticleDto
+            {
+                NewsArticleId = na.NewsArticleId,
+                NewsTitle = na.NewsTitle,
+                Headline = na.Headline,
+                CreatedDate = na.CreatedDate,
+                NewsContent = na.NewsContent,
+                NewsSource = na.NewsSource,
+                CategoryId = na.CategoryId,
+                CategoryName = na.Category?.CategoryName,
+                NewsStatus = na.NewsStatus,
+                CreatedById = na.CreatedById,
+                CreatedByName = na.CreatedById == 0 ? "Admin" : na.CreatedBy?.AccountName,
+                UpdatedById = na.UpdatedById,
+                UpdatedByName = na.UpdatedById == 0 ? "Admin" : na.UpdatedBy?.AccountName,
+                ModifiedDate = na.ModifiedDate
+            });
         }
     }
 }

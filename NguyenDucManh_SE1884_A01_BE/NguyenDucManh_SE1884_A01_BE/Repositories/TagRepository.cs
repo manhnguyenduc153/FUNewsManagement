@@ -71,6 +71,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Repositories
                 .SelectMany(t => t.NewsArticles)
                 .Include(a => a.Category)
                 .Include(a => a.CreatedBy)
+                .Include(a => a.UpdatedBy)
                 .ToListAsync();
         }
     }
