@@ -38,6 +38,11 @@
 
                     <hr />
 
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@($"https://localhost:7053{Model.ImageUrl}")" alt="@Model.NewsTitle" class="img-fluid rounded mb-3" style="max-height: 400px; width: 100%; object-fit: cover;">
+                    }
+
                     <h4 class="text-primary">@Model.Headline</h4>
                     
                     <div class="mt-3">
