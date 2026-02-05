@@ -53,6 +53,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
                 UpdatedById = na.UpdatedById,
                 UpdatedByName = na.UpdatedById == 0 ? "Admin" : na.UpdatedBy?.AccountName,
                 ModifiedDate = na.ModifiedDate,
+                ImageUrl = na.ImageUrl,
                 Tags = na.Tags.Adapt<ICollection<TagDto>>()
             }).ToList();
 
@@ -88,6 +89,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
                     CreatedByName = na.CreatedBy != null ? na.CreatedBy.AccountName : null,
                     UpdatedById = na.UpdatedById,
                     ModifiedDate = na.ModifiedDate,
+                    ImageUrl = na.ImageUrl,
                     Tags = na.Tags.Adapt<ICollection<TagDto>>()
                 }).ToList();
 
@@ -123,6 +125,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
                 UpdatedById = newsArticle.UpdatedById,
                 UpdatedByName = newsArticle.UpdatedById == 0 ? "Admin" : newsArticle.UpdatedBy?.AccountName,
                 ModifiedDate = newsArticle.ModifiedDate,
+                ImageUrl = newsArticle.ImageUrl,
                 Tags = newsArticle.Tags.Adapt<ICollection<TagDto>>()
             };
 
@@ -211,6 +214,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
             existing.NewsSource = dto.NewsSource;
             existing.CategoryId = dto.CategoryId;
             existing.NewsStatus = dto.NewsStatus;
+            existing.ImageUrl = dto.ImageUrl;
             existing.ModifiedDate = DateTime.Now;
 
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;

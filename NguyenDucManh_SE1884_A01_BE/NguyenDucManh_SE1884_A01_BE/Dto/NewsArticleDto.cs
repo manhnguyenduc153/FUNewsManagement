@@ -36,6 +36,8 @@ namespace NguyenDucManh_SE1884_A01_BE.Dto
 
         public DateTime? ModifiedDate { get; set; }
 
+        public string? ImageUrl { get; set; }
+
         public ICollection<TagDto> Tags { get; set; } = new List<TagDto>();
     }
 
@@ -64,6 +66,8 @@ namespace NguyenDucManh_SE1884_A01_BE.Dto
         public short? CreatedById { get; set; }
 
         public short? UpdatedById { get; set; }
+
+        public string? ImageUrl { get; set; }
 
         public DateTime? ModifiedDate { get; set; }
     }

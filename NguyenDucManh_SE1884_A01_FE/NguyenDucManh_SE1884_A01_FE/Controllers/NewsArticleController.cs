@@ -218,7 +218,8 @@ namespace Frontend.Controllers
                     NewsStatus = newsArticle.NewsStatus,
                     CreatedById = newsArticle.CreatedById,
                     UpdatedById = newsArticle.UpdatedById,
-                    ModifiedDate = newsArticle.ModifiedDate
+                    ModifiedDate = newsArticle.ModifiedDate,
+                    ImageUrl = newsArticle.ImageUrl
                 };
 
                 return PartialView("_CreateEditForm", saveDto);

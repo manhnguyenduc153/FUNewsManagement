@@ -34,6 +34,8 @@ namespace Assignmen_PRN232__.Dto
 
         public DateTime? ModifiedDate { get; set; }
 
+        public string? ImageUrl { get; set; }
+
         public List<TagDto> Tags { get; set; } = new List<TagDto>();
     }
 
@@ -60,6 +62,8 @@ namespace Assignmen_PRN232__.Dto
         public short? UpdatedById { get; set; }
 
         public DateTime? ModifiedDate { get; set; }
+
+        public string? ImageUrl { get; set; }
     }
 
     public class NewsArticleSearchDto : BaseSearchDto

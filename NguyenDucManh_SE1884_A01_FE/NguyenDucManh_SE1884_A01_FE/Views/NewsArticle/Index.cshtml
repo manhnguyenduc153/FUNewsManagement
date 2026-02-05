@@ -32,22 +32,6 @@
         </div>
     </div>
 
-    <!-- Alert Messages -->
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
     <!-- Search Form -->
     <div class="card mb-4">
         <div class="card-body">
@@ -119,9 +103,9 @@
                     <table class="table table-hover table-striped mb-0">
                         <thead class="table-light">
                             <tr>
+                                <th style="width: 8%">Image</th>
                                 <th style="width: 8%">ID</th>
                                 <th style="width: 12%">Title</th>
-                                <th style="width: 10%">Sources</th>
                                 <th style="width: 10%">Category</th>
                                 <th style="width: 12%">Tags</th>
                                 <th style="width: 10%">Created By</th>
@@ -135,12 +119,21 @@
                             {
                                 <tr>
                                     <td>
+                                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                        {
+                                            <img src="@($"https://localhost:7053{item.ImageUrl}")" alt="Article" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No image</span>
+                                        }
+                                    </td>
+                                    <td>
                                         <small>@(item.NewsArticleId ?? "N/A")</small>
                                     </td>
                                     <td>
                                         <span class="badge bg-info text-dark">@(item.NewsTitle ?? "N/A")</span>
                                     </td>
-                                    <td>@(item.NewsSource ?? "")</td>
                                     <td>
                                         @(item.CategoryName ?? "N/A")
                                     </td>
