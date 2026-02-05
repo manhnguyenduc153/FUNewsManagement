@@ -1,11 +1,7 @@
 using NguyenDucManh_SE1884_A01_BE.Dto;
-using NguyenDucManh_SE1884_A01_BE.Enums;
 using NguyenDucManh_SE1884_A01_BE.Services.IServices;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace NguyenDucManh_SE1884_A01_BE.Controllers.Api
 {
@@ -60,39 +56,6 @@ namespace NguyenDucManh_SE1884_A01_BE.Controllers.Api
         public async Task<IActionResult> Delete(short id)
         {
             var response = await _systemAccountService.DeleteAsync(id);
-            return StatusCode(response.StatusCode, response);
-        }
-
-        
-        [AllowAnonymous]
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] SystemAccountLoginDto dto)
-        {
-            var response = await _systemAccountService.LoginAsync(dto);
-
-            if (!response.Success)
-                return StatusCode(response.StatusCode, response);
-
-            var account = response.Data;
-
-            
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, account.AccountId.ToString()),
-                new Claim(ClaimTypes.Name, account.AccountEmail),
-                new Claim(ClaimTypes.Role, ((AccountRole)account.AccountRole.GetValueOrDefault()).ToString())
-            };
-
-            var identity = new ClaimsIdentity(
-                claims,
-                CookieAuthenticationDefaults.AuthenticationScheme);
-
-            var principal = new ClaimsPrincipal(identity);
-
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                principal);
-
             return StatusCode(response.StatusCode, response);
         }
     }

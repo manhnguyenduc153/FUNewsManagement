@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace NguyenDucManh_SE1884_A01_BE.Controllers.Api
 {
-    [Authorize(Roles = "Staff, Admin")]
+    [Authorize(Roles = "Staff,Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class CategoriesController : ControllerBase

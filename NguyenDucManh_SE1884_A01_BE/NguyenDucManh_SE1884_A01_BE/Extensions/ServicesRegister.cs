@@ -34,6 +34,9 @@ namespace UsersApp.Extensions
             
             services.AddTransient<IReportRepository, ReportRepository>();
             services.AddScoped<IReportService, ReportService>();
+
+            // JWT Service
+            services.AddScoped<IJwtService, JwtService>();
         }
     }
 }
