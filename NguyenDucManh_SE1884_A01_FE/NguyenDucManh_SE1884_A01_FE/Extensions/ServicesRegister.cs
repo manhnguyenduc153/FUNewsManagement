@@ -1,5 +1,5 @@
-﻿//using Assignmen_PRN232__.Data;
-using Assignmen_PRN232__.Models;
+﻿using Assignmen_PRN232__.Models;
+using Frontend.Handlers;
 using Frontend.Services;
 using Frontend.Services.IServices;
 
@@ -9,49 +9,25 @@ namespace UsersApp.Extensions
     {
         public static void RegisterCustomServices(this IServiceCollection services)
         {
-            var cookieContainer = new System.Net.CookieContainer();
+            services.AddTransient<JwtAuthenticationHandler>();
+            services.AddScoped<IJwtHelperService, JwtHelperService>();
             
             services.AddHttpClient<ITagService, TagService>()
-                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-                {
-                    UseCookies = true,
-                    CookieContainer = cookieContainer
-                });
+                .AddHttpMessageHandler<JwtAuthenticationHandler>();
             
             services.AddHttpClient<ICategoryService, CategoryService>()
-                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-                {
-                    UseCookies = true,
-                    CookieContainer = cookieContainer
-                });
+                .AddHttpMessageHandler<JwtAuthenticationHandler>();
             
             services.AddHttpClient<INewsArticleService, NewsArticleService>()
-                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-                {
-                    UseCookies = true,
-                    CookieContainer = cookieContainer
-                });
+                .AddHttpMessageHandler<JwtAuthenticationHandler>();
             
             services.AddHttpClient<ISystemAccountService, SystemAccountService>()
-                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-                {
-                    UseCookies = true,
-                    CookieContainer = cookieContainer
-                });
+                .AddHttpMessageHandler<JwtAuthenticationHandler>();
 
-            services.AddHttpClient<ILoginService, LoginService>()
-                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-                {
-                    UseCookies = true,
-                    CookieContainer = cookieContainer
-                });
+            services.AddHttpClient<ILoginService, LoginService>();
 
             services.AddHttpClient<IReportService, ReportService>()
-                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-                {
-                    UseCookies = true,
-                    CookieContainer = cookieContainer
-                });
+                .AddHttpMessageHandler<JwtAuthenticationHandler>();
         }
     }
 }

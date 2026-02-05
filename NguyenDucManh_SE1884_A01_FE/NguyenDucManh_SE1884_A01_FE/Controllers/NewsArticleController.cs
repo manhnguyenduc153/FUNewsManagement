@@ -1,4 +1,5 @@
 using Assignmen_PRN232__.Dto;
+using Frontend.Services;
 using Frontend.Services.IServices;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,12 +10,14 @@ namespace Frontend.Controllers
         private readonly INewsArticleService _newsArticleService;
         private readonly ICategoryService _categoryService;
         private readonly ITagService _tagService;
+        private readonly IJwtHelperService _jwtHelper;
 
-        public NewsArticleController(INewsArticleService newsArticleService, ICategoryService categoryService, ITagService tagService)
+        public NewsArticleController(INewsArticleService newsArticleService, ICategoryService categoryService, ITagService tagService, IJwtHelperService jwtHelper)
         {
             _newsArticleService = newsArticleService;
             _categoryService = categoryService;
             _tagService = tagService;
+            _jwtHelper = jwtHelper;
         }
 
         // GET: NewsArticle/Index
@@ -93,8 +96,8 @@ namespace Frontend.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Save(NewsArticleSaveDto dto)
         {
-            var role = Request.Cookies["UserRole"];
-            var redirectAction = role == "Staff" ? nameof(MyArticles) : nameof(Index);
+            var userInfo = _jwtHelper.GetUserInfo();
+            var redirectAction = userInfo.Role == "Staff" ? nameof(MyArticles) : nameof(Index);
 
             if (!ModelState.IsValid)
             {
@@ -124,7 +127,7 @@ namespace Frontend.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(string id)
         {
-            var role = Request.Cookies["UserRole"];
+            var userInfo = _jwtHelper.GetUserInfo();
             var result = await _newsArticleService.DeleteAsync(id);
 
             if (result.Success)
@@ -136,14 +139,26 @@ namespace Frontend.Controllers
                 TempData["ErrorMessage"] = result.Message;
             }
 
-            return RedirectToAction(role == "Staff" ? nameof(MyArticles) : nameof(Index));
+            return RedirectToAction(userInfo.Role == "Staff" ? nameof(MyArticles) : nameof(Index));
         }
 
         // GET: NewsArticle/MyArticles
         public async Task<IActionResult> MyArticles(NewsArticleSearchDto dto)
         {
-            var accountId = Request.Cookies["AccountId"];
-            if (string.IsNullOrEmpty(accountId) || !short.TryParse(accountId, out var userId))
+            var userInfo = _jwtHelper.GetUserInfo();
+            var token = HttpContext.Session.GetString("AccessToken");
+            
+            if (!userInfo.IsAuthenticated || string.IsNullOrEmpty(token))
+            {
+                TempData["ErrorMessage"] = "User not found";
+                return RedirectToAction("Index", "Login");
+            }
+
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            
+            if (string.IsNullOrEmpty(userIdClaim) || !short.TryParse(userIdClaim, out var userId))
             {
                 TempData["ErrorMessage"] = "User not found";
                 return RedirectToAction("Index", "Login");
@@ -242,7 +257,7 @@ namespace Frontend.Controllers
         [HttpPost]
         public async Task<IActionResult> Duplicate(string id)
         {
-            var role = Request.Cookies["UserRole"];
+            var userInfo = _jwtHelper.GetUserInfo();
             var result = await _newsArticleService.DuplicateAsync(id);
 
             if (result.Success)
@@ -254,7 +269,7 @@ namespace Frontend.Controllers
                 TempData["ErrorMessage"] = result.Message;
             }
 
-            return RedirectToAction(role == "Staff" ? nameof(MyArticles) : nameof(Index));
+            return RedirectToAction(userInfo.Role == "Staff" ? nameof(MyArticles) : nameof(Index));
         }
     }
 }

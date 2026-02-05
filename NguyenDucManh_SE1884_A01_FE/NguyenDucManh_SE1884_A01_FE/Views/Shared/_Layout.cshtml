@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Frontend.Services
+@inject IJwtHelperService JwtHelper
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -28,10 +31,11 @@
                 <hr class="sidebar-divider my-2">
                 
                 @{
-                    var isLoggedIn = Context.Request.Cookies.ContainsKey("IsAuthenticated") && Context.Request.Cookies["IsAuthenticated"] == "true";
-                    var userName = isLoggedIn ? Context.Request.Cookies["UserName"] : null;
-                    var userEmail = isLoggedIn ? Context.Request.Cookies["UserEmail"] : null;
-                    var userRole = isLoggedIn ? Context.Request.Cookies["UserRole"] : null;
+                    var userInfo = JwtHelper.GetUserInfo();
+                    var isLoggedIn = userInfo.IsAuthenticated;
+                    var userName = userInfo.UserName;
+                    var userEmail = userInfo.Email;
+                    var userRole = userInfo.Role;
                 }
 
                 @if (isLoggedIn)

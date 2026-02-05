@@ -29,66 +29,38 @@ namespace Frontend.Services
         {
             try
             {
-                var loginDto = new { accountEmail = email, accountPassword = password };
-                var response = await _httpClient.PostAsJsonAsync("systemaccounts/login", loginDto);
-
-                var responseContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Login Response Status: {response.StatusCode}");
-                Console.WriteLine($"Login Response Content: {responseContent}");
+                var loginDto = new { email = email, password = password };
+                var response = await _httpClient.PostAsJsonAsync("auth/login", loginDto);
 
                 if (!response.IsSuccessStatusCode)
                 {
                     return (false, "Invalid email or password", null);
                 }
 
-                if (string.IsNullOrEmpty(responseContent))
-                {
-                    return (false, "Empty response from server", null);
-                }
+                var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<TokenResponseDto>>();
 
-                var apiResponse = await response.Content
-                    .ReadFromJsonAsync<ApiResponse<SystemAccountDto>>();
-
-                if (apiResponse == null || !apiResponse.Success)
+                if (apiResponse == null || !apiResponse.Success || apiResponse.Data == null)
                 {
                     return (false, apiResponse?.Message ?? "Login failed", null);
                 }
 
-                // Lưu cookie từ Backend response
-                var httpContext = _httpContextAccessor.HttpContext;
-                if (httpContext != null && response.Headers.TryGetValues("Set-Cookie", out var cookies))
-                {
-                    foreach (var cookie in cookies)
-                    {
-                        httpContext.Response.Headers.Append("Set-Cookie", cookie);
-                    }
-                }
+                var token = apiResponse.Data.AccessToken;
+                var refreshToken = apiResponse.Data.RefreshToken;
 
-                // Save account info to cookies
+                // Save tokens to session
+                var httpContext = _httpContextAccessor.HttpContext;
                 if (httpContext != null)
                 {
-                    var cookieOptions = new Microsoft.AspNetCore.Http.CookieOptions
-                    {
-                        HttpOnly = true,
-                        Secure = true,
-                        SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax,
-                        Expires = DateTimeOffset.UtcNow.AddDays(7)
-                    };
-
-                    var roleName = ((AccountRole)(apiResponse.Data?.AccountRole ?? 0)).ToString();
-                    httpContext.Response.Cookies.Append("AccountId", apiResponse.Data?.AccountId.ToString() ?? "", cookieOptions);
-                    httpContext.Response.Cookies.Append("UserName", apiResponse.Data?.AccountName ?? "", cookieOptions);
-                    httpContext.Response.Cookies.Append("UserEmail", apiResponse.Data?.AccountEmail ?? "", cookieOptions);
-                    httpContext.Response.Cookies.Append("UserRole", roleName, cookieOptions);
-                    httpContext.Response.Cookies.Append("IsAuthenticated", "true", cookieOptions);
+                    httpContext.Session.SetString("AccessToken", token);
+                    httpContext.Session.SetString("RefreshToken", refreshToken);
+                    httpContext.Session.SetString("IsAuthenticated", "true");
                 }
 
-                return (true, apiResponse.Message ?? "Login successful", null);
+                return (true, apiResponse.Message ?? "Login successful", token);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in LoginAsync: {ex.Message}");
-                Console.WriteLine($"StackTrace: {ex.StackTrace}");
                 return (false, $"Error: {ex.Message}", null);
             }
         }
@@ -100,13 +72,18 @@ namespace Frontend.Services
                 var httpContext = _httpContextAccessor.HttpContext;
                 if (httpContext != null)
                 {
-                    httpContext.Response.Cookies.Delete("AccountId");
-                    httpContext.Response.Cookies.Delete("UserName");
-                    httpContext.Response.Cookies.Delete("UserEmail");
-                    httpContext.Response.Cookies.Delete("UserRole");
-                    httpContext.Response.Cookies.Delete("IsAuthenticated");
+                    var refreshToken = httpContext.Session.GetString("RefreshToken");
+                    var accessToken = httpContext.Session.GetString("AccessToken");
+
+                    if (!string.IsNullOrEmpty(refreshToken) && !string.IsNullOrEmpty(accessToken))
+                    {
+                        _httpClient.DefaultRequestHeaders.Authorization = 
+                            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+                        await _httpClient.PostAsJsonAsync("auth/logout", new { refreshToken });
+                    }
+
+                    httpContext.Session.Clear();
                 }
-                await Task.CompletedTask;
             }
             catch (Exception ex)
             {
