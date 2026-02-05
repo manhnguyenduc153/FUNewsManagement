@@ -1,0 +1,163 @@
+@using Assignmen_PRN232__.Dto
+@model Assignmen_PRN232_1.DTOs.Common.PagingResponse<AuditLogDto>
+
+@{
+    ViewData["PageTitle"] = "Audit Log";
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var pageSize = ViewBag.PageSize ?? 10;
+    var entity = ViewBag.Entity ?? "";
+    var action = ViewBag.Action ?? "";
+    var fromDate = ViewBag.FromDate;
+    var toDate = ViewBag.ToDate;
+    var totalPages = ViewBag.TotalPages ?? 1;
+    var totalRecords = ViewBag.TotalRecords ?? 0;
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="bi bi-clock-history"></i> Audit Log</h2>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Entity</label>
+                    <select name="entity" class="form-select">
+                        <option value="">All</option>
+                        <option value="NewsArticle" selected="@(entity == "NewsArticle")">NewsArticle</option>
+                        <option value="Category" selected="@(entity == "Category")">Category</option>
+                        <option value="Tag" selected="@(entity == "Tag")">Tag</option>
+                        <option value="SystemAccount" selected="@(entity == "SystemAccount")">SystemAccount</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Action</label>
+                    <select name="action" class="form-select">
+                        <option value="">All</option>
+                        <option value="CREATE" selected="@(action == "CREATE")">CREATE</option>
+                        <option value="UPDATE" selected="@(action == "UPDATE")">UPDATE</option>
+                        <option value="DELETE" selected="@(action == "DELETE")">DELETE</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">From Date</label>
+                    <input type="date" name="fromDate" value="@(fromDate?.ToString("yyyy-MM-dd"))" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">To Date</label>
+                    <input type="date" name="toDate" value="@(toDate?.ToString("yyyy-MM-dd"))" class="form-control">
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">Page Size</label>
+                    <select name="pageSize" class="form-select">
+                        <option value="10" selected="@(pageSize == 10)">10</option>
+                        <option value="20" selected="@(pageSize == 20)">20</option>
+                        <option value="50" selected="@(pageSize == 50)">50</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Audit Log (@totalRecords records)</h5>
+        </div>
+        <div class="card-body p-0">
+            @if (Model?.Items != null && Model.Items.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 10%">Timestamp</th>
+                                <th style="width: 10%">User</th>
+                                <th style="width: 8%">Action</th>
+                                <th style="width: 10%">Entity</th>
+                                <th style="width: 31%">Before Data</th>
+                                <th style="width: 31%">After Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td><small>@item.Timestamp.ToString("dd/MM/yyyy HH:mm:ss")</small></td>
+                                    <td>@item.User</td>
+                                    <td>
+                                        @if (item.Action == "CREATE")
+                                        {
+                                            <span class="badge bg-success">CREATE</span>
+                                        }
+                                        else if (item.Action == "UPDATE")
+                                        {
+                                            <span class="badge bg-warning">UPDATE</span>
+                                        }
+                                        else if (item.Action == "DELETE")
+                                        {
+                                            <span class="badge bg-danger">DELETE</span>
+                                        }
+                                    </td>
+                                    <td><span class="badge bg-info">@item.Entity</span></td>
+                                    <td><small class="text-muted">@(item.BeforeData ?? "-")</small></td>
+                                    <td><small class="text-muted">@(item.AfterData ?? "-")</small></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="text-muted mt-3">No audit logs found</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages > 1)
+    {
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pageIndex="@(currentPage - 1)" asp-route-pageSize="@pageSize" asp-route-entity="@entity" asp-route-action="@action" asp-route-fromDate="@fromDate" asp-route-toDate="@toDate">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </a>
+                </li>
+
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(i == currentPage ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-pageIndex="@i" asp-route-pageSize="@pageSize" asp-route-entity="@entity" asp-route-action="@action" asp-route-fromDate="@fromDate" asp-route-toDate="@toDate">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(currentPage >= totalPages ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pageIndex="@(currentPage + 1)" asp-route-pageSize="@pageSize" asp-route-entity="@entity" asp-route-action="@action" asp-route-fromDate="@fromDate" asp-route-toDate="@toDate">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="text-center text-muted">
+            Showing @((currentPage - 1) * pageSize + 1) to @Math.Min(currentPage * pageSize, totalRecords) of @totalRecords entries
+        </div>
+    }
+</div>

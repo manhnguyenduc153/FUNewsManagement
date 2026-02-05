@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 
 namespace NguyenDucManh_SE1884_A01_BE.Models;
 
@@ -15,6 +18,12 @@ public partial class AppDbContext : DbContext
     {
     }
 
+    public AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAccessor httpContextAccessor)
+        : base(options)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+
     public virtual DbSet<Category> Categories { get; set; }
 
     public virtual DbSet<NewsArticle> NewsArticles { get; set; }
@@ -24,6 +33,10 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<Tag> Tags { get; set; }
 
     public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
+
+    public virtual DbSet<AuditLog> AuditLogs { get; set; }
+
+    private readonly IHttpContextAccessor? _httpContextAccessor;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -137,7 +150,77 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.ToTable("AuditLog");
+            entity.Property(e => e.User).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Action).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Entity).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Timestamp).IsRequired();
+        });
+
         OnModelCreatingPartial(modelBuilder);
+    }
+
+    public override int SaveChanges()
+    {
+        CaptureAuditLogs();
+        return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        CaptureAuditLogs();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void CaptureAuditLogs()
+    {
+        var entries = ChangeTracker.Entries()
+            .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified || e.State == EntityState.Deleted)
+            .Where(e => e.Entity is not AuditLog && e.Entity is not RefreshToken)
+            .ToList();
+
+        var userName = _httpContextAccessor?.HttpContext?.User?.Identity?.Name ?? "System";
+
+        foreach (var entry in entries)
+        {
+            var entityName = entry.Entity.GetType().Name;
+            var action = entry.State switch
+            {
+                EntityState.Added => "CREATE",
+                EntityState.Modified => "UPDATE",
+                EntityState.Deleted => "DELETE",
+                _ => "UNKNOWN"
+            };
+
+            string? beforeData = null;
+            string? afterData = null;
+
+            if (entry.State == EntityState.Modified || entry.State == EntityState.Deleted)
+            {
+                var beforeValues = entry.OriginalValues.Properties
+                    .ToDictionary(p => p.Name, p => entry.OriginalValues[p]);
+                beforeData = JsonSerializer.Serialize(beforeValues);
+            }
+
+            if (entry.State == EntityState.Added || entry.State == EntityState.Modified)
+            {
+                var afterValues = entry.CurrentValues.Properties
+                    .ToDictionary(p => p.Name, p => entry.CurrentValues[p]);
+                afterData = JsonSerializer.Serialize(afterValues);
+            }
+
+            AuditLogs.Add(new AuditLog
+            {
+                User = userName,
+                Action = action,
+                Entity = entityName,
+                BeforeData = beforeData,
+                AfterData = afterData,
+                Timestamp = DateTime.Now
+            });
+        }
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
