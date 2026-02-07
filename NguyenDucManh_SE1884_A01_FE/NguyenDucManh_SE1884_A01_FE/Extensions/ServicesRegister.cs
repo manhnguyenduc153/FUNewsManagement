@@ -31,6 +31,9 @@ namespace UsersApp.Extensions
 
             services.AddHttpClient<IAuditLogService, AuditLogService>()
                 .AddHttpMessageHandler<JwtAuthenticationHandler>();
+
+            services.AddHttpClient<IDashboardService, DashboardService>()
+                .AddHttpMessageHandler<JwtAuthenticationHandler>();
         }
     }
 }

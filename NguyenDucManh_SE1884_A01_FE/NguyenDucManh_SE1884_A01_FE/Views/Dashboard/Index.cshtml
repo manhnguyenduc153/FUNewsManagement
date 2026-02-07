@@ -1,0 +1,89 @@
+@model Assignmen_PRN232__.Dto.DashboardDto
+
+@{
+    ViewData["PageTitle"] = "Dashboard";
+}
+
+<div class="container-fluid mt-4">
+    <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Articles by Category</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Articles by Status</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const categoryData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ArticlesByCategory));
+        const statusData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ArticlesByStatus));
+
+        console.log('Category Data:', categoryData);
+        console.log('Status Data:', statusData);
+
+        // Category Chart
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'bar',
+            data: {
+                labels: categoryData.map(x => x.CategoryName || x.categoryName),
+                datasets: [{
+                    label: 'Number of Articles',
+                    data: categoryData.map(x => x.Count || x.count),
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true },
+                    tooltip: { enabled: true }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+
+        // Status Chart
+        new Chart(document.getElementById('statusChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Active', 'Inactive'],
+                datasets: [{
+                    data: [statusData.ActiveCount || statusData.activeCount, statusData.InactiveCount || statusData.inactiveCount],
+                    backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(255, 99, 132, 0.5)'],
+                    borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    </script>
+}
