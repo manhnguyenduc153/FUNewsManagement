@@ -4,7 +4,6 @@
 @{
     ViewData["PageTitle"] = "Trending Articles";
     var filter = ViewBag.Filter as AnalyticsFilterDto ?? new AnalyticsFilterDto();
-    var exportUrl = ViewBag.ExportUrl as string ?? "";
 }
 
 <div class="container-fluid mt-4">
@@ -13,9 +12,16 @@
             <h2><i class="bi bi-graph-up-arrow"></i> Trending Articles</h2>
         </div>
         <div class="col-md-6 text-end">
-            <a href="@exportUrl" class="btn btn-success" target="_blank">
-                <i class="bi bi-download"></i> Export CSV
-            </a>
+            <form asp-action="Export" method="get" style="display:inline;">
+                <input type="hidden" name="top" value="@filter.Top" />
+                <input type="hidden" name="fromDate" value="@filter.FromDate?.ToString("yyyy-MM-dd")" />
+                <input type="hidden" name="toDate" value="@filter.ToDate?.ToString("yyyy-MM-dd")" />
+                <input type="hidden" name="categoryId" value="@filter.CategoryId" />
+                <input type="hidden" name="authorId" value="@filter.AuthorId" />
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-download"></i> Export CSV
+                </button>
+            </form>
         </div>
     </div>
 
