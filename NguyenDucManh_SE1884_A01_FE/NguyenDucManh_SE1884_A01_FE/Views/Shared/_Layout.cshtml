@@ -107,12 +107,122 @@
 
         <!-- CONTENT -->
         <main class="content">
+            @if (isLoggedIn)
+            {
+                <div class="position-fixed top-0 end-0 p-3" style="z-index: 11">
+                    <div class="dropdown">
+                        <button class="btn btn-light position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown">
+                            <i class="bi bi-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationCount" style="display:none;">0</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" style="width: 300px; max-height: 400px; overflow-y: auto;" id="notificationList">
+                            <li><h6 class="dropdown-header">Notifications</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="text-center text-muted p-3">No notifications</li>
+                        </ul>
+                    </div>
+                </div>
+            }
             @RenderBody()
         </main>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.0/dist/browser/signalr.min.js"></script>
+
+    @if (isLoggedIn)
+    {
+        <script>
+            const notifications = [];
+            const accessToken = '@Html.Raw(Context.Session.GetString("AccessToken"))';
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("https://localhost:7053/notificationHub")
+                .build();
+
+            connection.on("ReceiveNotification", function (message) {
+                loadNotifications();
+                showToast(message);
+            });
+
+            connection.start().then(() => {
+                console.log('SignalR Connected');
+                loadNotifications();
+            }).catch(err => console.error('SignalR Error:', err));
+
+            function loadNotifications() {
+                fetch('https://localhost:7053/api/notification/recent', {
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    notifications.length = 0;
+                    data.forEach(n => {
+                        notifications.push({ id: n.id, message: n.message, time: new Date(n.createdAt), isRead: n.isRead });
+                    });
+                    updateNotificationUI();
+                })
+                .catch(err => console.error('Load notifications error:', err));
+            }
+
+            function updateNotificationUI() {
+                const unreadCount = notifications.filter(n => !n.isRead).length;
+                $('#notificationCount').text(unreadCount).toggle(unreadCount > 0);
+                
+                let html = '<li><h6 class="dropdown-header">Notifications</h6></li>';
+                html += '<li><button class="dropdown-item text-primary" onclick="markAllAsRead()"><i class="bi bi-check-all"></i> Mark all as read</button></li>';
+                html += '<li><hr class="dropdown-divider"></li>';
+                
+                if (notifications.length === 0) {
+                    html += '<li class="text-center text-muted p-3">No notifications</li>';
+                } else {
+                    notifications.forEach(n => {
+                        const bgClass = n.isRead ? '' : 'bg-light';
+                        html += `<li><a class="dropdown-item ${bgClass}" href="#" onclick="markAsRead(${n.id})">${n.message}<br><small class="text-muted">${n.time.toLocaleTimeString()}</small></a></li>`;
+                    });
+                }
+                $('#notificationList').html(html);
+            }
+
+            function markAsRead(id) {
+                fetch(`https://localhost:7053/api/notification/${id}/read`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                })
+                .then(() => {
+                    const notification = notifications.find(n => n.id === id);
+                    if (notification) notification.isRead = true;
+                    updateNotificationUI();
+                })
+                .catch(err => console.error('Mark as read error:', err));
+            }
+
+            function markAllAsRead() {
+                fetch('https://localhost:7053/api/notification/read-all', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                })
+                .then(() => {
+                    notifications.forEach(n => n.isRead = true);
+                    updateNotificationUI();
+                })
+                .catch(err => console.error('Mark all as read error:', err));
+            }
+
+            function showToast(message) {
+                const toast = `<div class="toast-container position-fixed bottom-0 end-0 p-3">
+                    <div class="toast align-items-center text-bg-info border-0" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">${message}</div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                </div>`;
+                $('body').append(toast);
+                new bootstrap.Toast($('.toast').last()[0], {delay: 5000}).show();
+            }
+        </script>
+    }
 
     <script>
         $(document).ready(function() {

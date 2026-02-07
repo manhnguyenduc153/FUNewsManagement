@@ -36,6 +36,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<AuditLog> AuditLogs { get; set; }
 
+    public virtual DbSet<Notification> Notifications { get; set; }
+
     private readonly IHttpContextAccessor? _httpContextAccessor;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -157,6 +159,14 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Action).HasMaxLength(20).IsRequired();
             entity.Property(e => e.Entity).HasMaxLength(50).IsRequired();
             entity.Property(e => e.Timestamp).IsRequired();
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.ToTable("Notification");
+            entity.Property(e => e.Message).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.IsRead).IsRequired();
         });
 
         OnModelCreatingPartial(modelBuilder);

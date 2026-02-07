@@ -5,6 +5,7 @@ using NguyenDucManh_SE1884_A01_BE.Repositories.IRepositories;
 using NguyenDucManh_SE1884_A01_BE.DTOs.Common;
 using NguyenDucManh_SE1884_A01_BE.Services.IServices;
 using Mapster;
+using Microsoft.AspNetCore.SignalR;
 
 namespace NguyenDucManh_SE1884_A01_BE.Services
 {
@@ -13,12 +14,16 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
         private readonly INewsArticleRepository _newsArticleRepository;
         private readonly ITagRepository _tagRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly Microsoft.AspNetCore.SignalR.IHubContext<NguyenDucManh_SE1884_A01_BE.Hubs.NotificationHub> _hubContext;
+        private readonly AppDbContext _context;
 
-        public NewsArticleService(INewsArticleRepository newsArticleRepository, ITagRepository tagRepository, IHttpContextAccessor httpContextAccessor)
+        public NewsArticleService(INewsArticleRepository newsArticleRepository, ITagRepository tagRepository, IHttpContextAccessor httpContextAccessor, Microsoft.AspNetCore.SignalR.IHubContext<NguyenDucManh_SE1884_A01_BE.Hubs.NotificationHub> hubContext, AppDbContext context)
         {
             _newsArticleRepository = newsArticleRepository;
             _tagRepository = tagRepository;
             _httpContextAccessor = httpContextAccessor;
+            _hubContext = hubContext;
+            _context = context;
         }
 
         public async Task<IEnumerable<NewsArticleDto>> GetAllAsync()
@@ -191,6 +196,17 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
 
             await _newsArticleRepository.AddAsync(entity);
             await _newsArticleRepository.SaveChangesAsync();
+
+            var message = $"New article: {entity.NewsTitle}";
+            _context.Notifications.Add(new Notification
+            {
+                Message = message,
+                CreatedAt = DateTime.Now,
+                IsRead = false
+            });
+            await _context.SaveChangesAsync();
+
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", message);
 
             return ApiResponse<NewsArticleDto>.Ok(
                 entity.Adapt<NewsArticleDto>(),
