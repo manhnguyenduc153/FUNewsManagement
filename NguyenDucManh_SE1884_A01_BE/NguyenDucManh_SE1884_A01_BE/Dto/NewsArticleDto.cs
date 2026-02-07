@@ -38,6 +38,8 @@ namespace NguyenDucManh_SE1884_A01_BE.Dto
 
         public string? ImageUrl { get; set; }
 
+        public int ViewCount { get; set; }
+
         public ICollection<TagDto> Tags { get; set; } = new List<TagDto>();
     }
 

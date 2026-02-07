@@ -281,5 +281,17 @@ namespace Frontend.Services
                 return new List<NewsArticleDto>();
             }
         }
+        public async Task IncrementViewAsync(string id)
+        {
+            try
+            {
+                await _httpClient.PostAsync($"NewsArticles/{id}/increment-view", null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in IncrementViewAsync: {ex.Message}");
+            }
+        }
     }
 }
+

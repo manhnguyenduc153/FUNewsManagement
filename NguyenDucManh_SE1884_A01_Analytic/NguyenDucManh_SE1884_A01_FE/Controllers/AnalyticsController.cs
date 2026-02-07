@@ -24,5 +24,29 @@ namespace NguyenDucManh_SE1884_A01_Analytic.Controllers
             var result = await _analyticsService.GetDashboardAsync(token);
             return Ok(result);
         }
+
+        [HttpGet("trending")]
+        public async Task<ActionResult<List<TrendingArticleDto>>> GetTrending([FromQuery] AnalyticsFilterDto filter)
+        {
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var result = await _analyticsService.GetTrendingAsync(token, filter);
+            return Ok(result);
+        }
+
+        [HttpGet("export")]
+        public async Task<IActionResult> ExportExcel([FromQuery] AnalyticsFilterDto filter)
+        {
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var data = await _analyticsService.GetTrendingAsync(token, filter);
+            
+            var csv = "NewsArticleId,NewsTitle,CategoryName,AuthorName,ViewCount,CreatedDate\n";
+            foreach (var item in data)
+            {
+                csv += $"{item.NewsArticleId},\"{item.NewsTitle}\",\"{item.CategoryName}\",\"{item.AuthorName}\",{item.ViewCount},{item.CreatedDate:yyyy-MM-dd}\n";
+            }
+            
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+            return File(bytes, "text/csv", $"trending_{DateTime.Now:yyyyMMdd}.csv");
+        }
     }
 }

@@ -5,6 +5,7 @@ namespace NguyenDucManh_SE1884_A01_Analytic.Services
     public interface IAnalyticsService
     {
         Task<DashboardDto> GetDashboardAsync(string token);
+        Task<List<TrendingArticleDto>> GetTrendingAsync(string token, AnalyticsFilterDto filter);
     }
 
     public class AnalyticsService : IAnalyticsService
@@ -49,6 +50,50 @@ namespace NguyenDucManh_SE1884_A01_Analytic.Services
                     InactiveCount = report.TotalInactive
                 }
             };
+        }
+
+        public async Task<List<TrendingArticleDto>> GetTrendingAsync(string token, AnalyticsFilterDto filter)
+        {
+            var client = _httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var baseUrl = _configuration["CoreApiUrl"] ?? "https://localhost:7053";
+
+            var queryParams = new List<string>();
+            if (filter.FromDate.HasValue)
+                queryParams.Add($"FromDate={filter.FromDate.Value:yyyy-MM-dd}");
+            if (filter.ToDate.HasValue)
+                queryParams.Add($"ToDate={filter.ToDate.Value:yyyy-MM-dd}");
+            if (filter.CategoryId.HasValue)
+                queryParams.Add($"CategoryId={filter.CategoryId}");
+            if (filter.AuthorId.HasValue)
+                queryParams.Add($"AuthorId={filter.AuthorId}");
+
+            var query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+
+            var articlesResponse = await client.GetAsync($"{baseUrl}/api/newsarticles/all{query}");
+            articlesResponse.EnsureSuccessStatusCode();
+            var articles = await articlesResponse.Content.ReadFromJsonAsync<List<NewsArticleFullDto>>();
+
+            Console.WriteLine($"Articles fetched: {articles?.Count}");
+            if (articles != null && articles.Any())
+            {
+                Console.WriteLine($"First article ViewCount: {articles[0].ViewCount}");
+            }
+
+            return articles!
+                .OrderByDescending(a => a.ViewCount)
+                .Take(filter.Top)
+                .Select(a => new TrendingArticleDto
+                {
+                    NewsArticleId = a.NewsArticleId!,
+                    NewsTitle = a.NewsTitle!,
+                    CategoryName = a.CategoryName ?? "N/A",
+                    AuthorName = a.CreatedByName ?? "N/A",
+                    ViewCount = a.ViewCount,
+                    CreatedDate = a.CreatedDate
+                })
+                .ToList();
         }
     }
 }

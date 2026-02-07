@@ -15,5 +15,6 @@ namespace Frontend.Services.IServices
         Task<(bool Success, string Message)> AddTagAsync(string newsArticleId, int tagId);
         Task<(bool Success, string Message)> RemoveTagAsync(string newsArticleId, int tagId);
         Task<List<NewsArticleDto>> GetRelatedArticlesAsync(string newsArticleId);
+        Task IncrementViewAsync(string id);
     }
 }

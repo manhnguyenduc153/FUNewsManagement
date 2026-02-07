@@ -41,3 +41,15 @@ namespace NguyenDucManh_SE1884_A01_Analytic.Dto
         public int ArticleCount { get; set; }
     }
 }
+
+    public class NewsArticleFullDto
+    {
+        public string? NewsArticleId { get; set; }
+        public string? NewsTitle { get; set; }
+        public int? CategoryId { get; set; }
+        public string? CategoryName { get; set; }
+        public string? CreatedByName { get; set; }
+        public int ViewCount { get; set; }
+        public DateTime? CreatedDate { get; set; }
+    }
+

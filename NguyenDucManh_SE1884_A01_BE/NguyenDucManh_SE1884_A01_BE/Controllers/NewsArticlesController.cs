@@ -53,6 +53,14 @@ namespace NguyenDucManh_SE1884_A01_BE.Controllers.Api
             return Ok(result);
         }
 
+        [AllowAnonymous]
+        [HttpPost("{id}/increment-view")]
+        public async Task<IActionResult> IncrementView(string id)
+        {
+            var response = await _newsArticleService.IncrementViewCountAsync(id);
+            return StatusCode(response.StatusCode, response);
+        }
+
         
         [HttpPost("create-or-edit")]
         public async Task<IActionResult> CreateOrEdit([FromBody] NewsArticleSaveDto dto)

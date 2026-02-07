@@ -54,6 +54,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
                 UpdatedByName = na.UpdatedById == 0 ? "Admin" : na.UpdatedBy?.AccountName,
                 ModifiedDate = na.ModifiedDate,
                 ImageUrl = na.ImageUrl,
+                ViewCount = na.ViewCount,
                 Tags = na.Tags.Adapt<ICollection<TagDto>>()
             }).ToList();
 
@@ -126,6 +127,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
                 UpdatedByName = newsArticle.UpdatedById == 0 ? "Admin" : newsArticle.UpdatedBy?.AccountName,
                 ModifiedDate = newsArticle.ModifiedDate,
                 ImageUrl = newsArticle.ImageUrl,
+                ViewCount = newsArticle.ViewCount,
                 Tags = newsArticle.Tags.Adapt<ICollection<TagDto>>()
             };
 
@@ -363,5 +365,18 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
             var articles = await _newsArticleRepository.GetRelatedArticlesAsync(newsArticleId);
             return articles.Adapt<IEnumerable<NewsArticleDto>>();
         }
+        public async Task<ApiResponse<bool>> IncrementViewCountAsync(string id)
+        {
+            var newsArticle = await _newsArticleRepository.GetByIdAsync(id);
+            if (newsArticle == null)
+                return ApiResponse<bool>.Fail("News article not found");
+
+            newsArticle.ViewCount++;
+            await _newsArticleRepository.SaveChangesAsync();
+
+            return ApiResponse<bool>.Ok(true, "View count incremented");
+        }
     }
 }
+
+

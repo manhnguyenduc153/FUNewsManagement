@@ -36,6 +36,8 @@ namespace Assignmen_PRN232__.Dto
 
         public string? ImageUrl { get; set; }
 
+        public int ViewCount { get; set; }
+
         public List<TagDto> Tags { get; set; } = new List<TagDto>();
     }
 

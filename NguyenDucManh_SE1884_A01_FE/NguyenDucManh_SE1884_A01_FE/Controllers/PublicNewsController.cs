@@ -31,6 +31,8 @@ namespace Frontend.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            await _newsArticleService.IncrementViewAsync(id);
+
             var relatedArticles = await _newsArticleService.GetRelatedArticlesAsync(id);
             ViewBag.RelatedArticles = relatedArticles;
 

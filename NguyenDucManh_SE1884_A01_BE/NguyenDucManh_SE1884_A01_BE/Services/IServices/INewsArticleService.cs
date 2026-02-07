@@ -18,5 +18,6 @@ namespace NguyenDucManh_SE1884_A01_BE.Services.IServices
         Task<ApiResponse<bool>> AddTagAsync(string newsArticleId, int tagId);
         Task<ApiResponse<bool>> RemoveTagAsync(string newsArticleId, int tagId);
         Task<IEnumerable<NewsArticleDto>> GetRelatedArticlesAsync(string newsArticleId);
+        Task<ApiResponse<bool>> IncrementViewCountAsync(string id);
     }
 }
