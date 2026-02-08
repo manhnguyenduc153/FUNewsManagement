@@ -1,11 +1,15 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using NguyenDucManh_SE1884_A01_AIAPI.Services;
+using NguyenDucManh_SE1884_A01_AIAPI.Services.IServices;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
+
+builder.Services.AddScoped<IAIService, AIService>();
 
 builder.Services.AddCors(options =>
 {

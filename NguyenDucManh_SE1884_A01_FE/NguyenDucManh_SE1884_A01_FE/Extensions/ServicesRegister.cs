@@ -34,6 +34,9 @@ namespace UsersApp.Extensions
 
             services.AddHttpClient<IDashboardService, DashboardService>()
                 .AddHttpMessageHandler<JwtAuthenticationHandler>();
+
+            services.AddHttpClient<IAIService, AIService>()
+                .AddHttpMessageHandler<JwtAuthenticationHandler>();
         }
     }
 }

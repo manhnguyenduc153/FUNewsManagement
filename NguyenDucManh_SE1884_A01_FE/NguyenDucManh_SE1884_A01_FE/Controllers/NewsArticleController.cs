@@ -11,13 +11,17 @@ namespace Frontend.Controllers
         private readonly ICategoryService _categoryService;
         private readonly ITagService _tagService;
         private readonly IJwtHelperService _jwtHelper;
+        private readonly IAIService _aiService;
+        private readonly ILogger<NewsArticleController> _logger;
 
-        public NewsArticleController(INewsArticleService newsArticleService, ICategoryService categoryService, ITagService tagService, IJwtHelperService jwtHelper)
+        public NewsArticleController(INewsArticleService newsArticleService, ICategoryService categoryService, ITagService tagService, IJwtHelperService jwtHelper, IAIService aiService, ILogger<NewsArticleController> logger)
         {
             _newsArticleService = newsArticleService;
             _categoryService = categoryService;
             _tagService = tagService;
             _jwtHelper = jwtHelper;
+            _aiService = aiService;
+            _logger = logger;
         }
 
         // GET: NewsArticle/Index
@@ -275,5 +279,36 @@ namespace Frontend.Controllers
 
             return RedirectToAction(userInfo.Role == "Staff" ? nameof(MyArticles) : nameof(Index));
         }
+
+        // AJAX: AI Suggest Tags
+        [HttpPost]
+        public async Task<IActionResult> AISuggestTags([FromBody] AISuggestRequest request)
+        {
+            _logger.LogInformation("[FE] AISuggestTags called with content length: {Length}", request?.Content?.Length ?? 0);
+            
+            if (string.IsNullOrWhiteSpace(request?.Content))
+            {
+                _logger.LogWarning("[FE] Content is empty");
+                return Json(new { success = false, message = "Content is required" });
+            }
+
+            try
+            {
+                _logger.LogInformation("[FE] Calling AI Service...");
+                var result = await _aiService.SuggestTagsAsync(request.Content);
+                _logger.LogInformation("[FE] AI Service returned {Count} tags", result.SuggestedTags.Count);
+                return Json(new { success = true, suggestedTags = result.SuggestedTags });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[FE] Error calling AI Service");
+                return Json(new { success = false, message = "Error calling AI service" });
+            }
+        }
+    }
+
+    public class AISuggestRequest
+    {
+        public string Content { get; set; } = string.Empty;
     }
 }

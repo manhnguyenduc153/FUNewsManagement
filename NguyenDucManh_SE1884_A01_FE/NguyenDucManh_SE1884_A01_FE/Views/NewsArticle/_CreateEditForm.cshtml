@@ -97,7 +97,15 @@
 
     <!-- Tags Section -->
     <div class="mb-3">
-        <label class="form-label">Tags</label>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label mb-0">Tags</label>
+            <button type="button" class="btn btn-sm btn-primary" onclick="aiSuggestTags()">
+                <i class="bi bi-magic"></i> AI Suggest Tags
+            </button>
+        </div>
+        <div id="aiSuggestWarning" class="alert alert-info" style="display:none;">
+            <i class="bi bi-info-circle"></i> <strong>AI Suggested:</strong> <span id="aiSuggestedTagNames"></span>
+        </div>
         <div class="border rounded p-3" style="max-height: 150px; overflow-y: auto;">
             <div class="d-flex flex-wrap gap-2">
                 @foreach (var tag in tags)
@@ -187,5 +195,64 @@
         document.getElementById('imageFile').value = '';
         document.getElementById('imageUrlHidden').value = '';
         document.getElementById('imagePreview').innerHTML = '';
+    }
+
+    // AI Suggest Tags
+    async function aiSuggestTags() {
+        console.log('[JS] aiSuggestTags called');
+        const content = document.getElementById('newsContent').value;
+        console.log('[JS] Content length:', content.length);
+        
+        if (!content || content.trim().length === 0) {
+            alert('Please enter news content first');
+            return;
+        }
+
+        const btn = event.target.closest('button');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Analyzing...';
+
+        try {
+            console.log('[JS] Calling API...');
+            const response = await fetch('@Url.Action("AISuggestTags", "NewsArticle")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ content: content })
+            });
+
+            console.log('[JS] Response status:', response.status);
+            const result = await response.json();
+            console.log('[JS] Result:', result);
+
+            if (result.success && result.suggestedTags && result.suggestedTags.length > 0) {
+                // Uncheck all tags first
+                document.querySelectorAll('.form-check-input[name="TagIds"]').forEach(cb => cb.checked = false);
+
+                // Check suggested tags
+                const tagNames = [];
+                result.suggestedTags.forEach(tag => {
+                    const checkbox = document.getElementById('tag_' + tag.tagId);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        tagNames.push(tag.tagName);
+                    }
+                });
+
+                // Show warning with suggested tag names
+                document.getElementById('aiSuggestedTagNames').textContent = tagNames.join(', ');
+                document.getElementById('aiSuggestWarning').style.display = 'block';
+            } else {
+                alert('No tags suggested. Please try different content.');
+            }
+        } catch (error) {
+            console.error('[JS] Error:', error);
+            alert('Error calling AI service: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
     }
 </script>
