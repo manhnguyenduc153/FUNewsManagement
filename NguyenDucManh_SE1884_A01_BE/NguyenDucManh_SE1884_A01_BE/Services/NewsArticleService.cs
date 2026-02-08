@@ -197,6 +197,24 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
             await _newsArticleRepository.AddAsync(entity);
             await _newsArticleRepository.SaveChangesAsync();
 
+            // Add tags
+            if (dto.TagIds != null && dto.TagIds.Any())
+            {
+                var saved = await _newsArticleRepository.GetByIdAsync(entity.NewsArticleId);
+                if (saved != null)
+                {
+                    foreach (var tagId in dto.TagIds)
+                    {
+                        var tag = await _tagRepository.GetByIdAsync(tagId);
+                        if (tag != null)
+                        {
+                            saved.Tags.Add(tag);
+                        }
+                    }
+                    await _newsArticleRepository.SaveChangesAsync();
+                }
+            }
+
             var message = $"New article: {entity.NewsTitle}";
             _context.Notifications.Add(new Notification
             {
@@ -243,6 +261,20 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
             else
             {
                 existing.UpdatedById = 0;
+            }
+
+            // Update tags
+            existing.Tags.Clear();
+            if (dto.TagIds != null && dto.TagIds.Any())
+            {
+                foreach (var tagId in dto.TagIds)
+                {
+                    var tag = await _tagRepository.GetByIdAsync(tagId);
+                    if (tag != null)
+                    {
+                        existing.Tags.Add(tag);
+                    }
+                }
             }
 
             await _newsArticleRepository.SaveChangesAsync();

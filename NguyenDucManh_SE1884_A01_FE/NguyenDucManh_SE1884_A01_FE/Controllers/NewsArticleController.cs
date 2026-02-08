@@ -197,7 +197,9 @@ namespace Frontend.Controllers
         public async Task<IActionResult> GetCreateEditForm(string? id)
         {
             var categories = await _categoryService.GetAllAsync();
+            var tags = await _tagService.GetAllAsync();
             ViewBag.Categories = categories;
+            ViewBag.Tags = tags;
 
             if (!string.IsNullOrEmpty(id))
             {
@@ -219,7 +221,8 @@ namespace Frontend.Controllers
                     CreatedById = newsArticle.CreatedById,
                     UpdatedById = newsArticle.UpdatedById,
                     ModifiedDate = newsArticle.ModifiedDate,
-                    ImageUrl = newsArticle.ImageUrl
+                    ImageUrl = newsArticle.ImageUrl,
+                    TagIds = newsArticle.Tags?.Select(t => t.TagId).ToList() ?? new List<int>()
                 };
 
                 return PartialView("_CreateEditForm", saveDto);

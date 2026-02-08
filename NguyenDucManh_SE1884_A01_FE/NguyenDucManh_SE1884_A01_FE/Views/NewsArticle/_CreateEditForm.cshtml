@@ -4,6 +4,7 @@
 
 @{
     var categories = (List<CategoryDto>?)ViewBag.Categories ?? new List<CategoryDto>();
+    var tags = (List<TagDto>?)ViewBag.Tags ?? new List<TagDto>();
     var accessToken = HttpContextAccessor.HttpContext?.Session.GetString("AccessToken") ?? "";
 }
 
@@ -92,6 +93,28 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Tags Section -->
+    <div class="mb-3">
+        <label class="form-label">Tags</label>
+        <div class="border rounded p-3" style="max-height: 150px; overflow-y: auto;">
+            <div class="d-flex flex-wrap gap-2">
+                @foreach (var tag in tags)
+                {
+                    var isChecked = Model.TagIds != null && Model.TagIds.Contains(tag.TagId);
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" 
+                               name="TagIds" value="@tag.TagId" 
+                               id="tag_@tag.TagId" @(isChecked ? "checked" : "")>
+                        <label class="form-check-label" for="tag_@tag.TagId">
+                            @tag.TagName
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+        <small class="form-text text-muted">Select multiple tags for this article</small>
     </div>
 </div>
 

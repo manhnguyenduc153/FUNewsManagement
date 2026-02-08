@@ -72,6 +72,8 @@ namespace NguyenDucManh_SE1884_A01_BE.Dto
         public string? ImageUrl { get; set; }
 
         public DateTime? ModifiedDate { get; set; }
+
+        public List<int> TagIds { get; set; } = new List<int>();
     }
 
     public class NewsArticleSearchDto : BaseSearchDto

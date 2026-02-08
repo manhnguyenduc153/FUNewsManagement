@@ -142,20 +142,13 @@
                                         {
                                             @foreach (var tag in item.Tags)
                                             {
-                                                <span class="badge bg-secondary me-1">
-                                                    @tag.TagName
-                                                    <button type="button" class="btn-close btn-close-white" 
-                                                            style="font-size: 0.6rem; padding: 0.1rem 0.2rem;" 
-                                                            onclick="removeTag('@item.NewsArticleId', @tag.TagId)"
-                                                            title="Remove tag"></button>
-                                                </span>
+                                                <span class="badge bg-secondary me-1">@tag.TagName</span>
                                             }
                                         }
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#addTagModal"
-                                                onclick="loadAddTagForm('@item.NewsArticleId')" 
-                                                title="Add tag">+</button>
+                                        else
+                                        {
+                                            <span class="text-muted">No tags</span>
+                                        }
                                     </td>
                                     <td>@(item.CreatedByName ?? "N/A")</td>
                                     <td>
@@ -355,25 +348,6 @@
     </div>
 </div>
 
-<!-- Add Tag Modal -->
-<div class="modal fade" id="addTagModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addTagModalTitle">Add Tag to Article</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div id="addTagModalBody">
-                <div class="modal-body text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 @section Scripts {
     <script>
         // Load Create Form (trống)
@@ -393,93 +367,6 @@
                 $('#modalBody').html(html);
             }).fail(function() {
                 alert('Error loading form');
-            });
-        }
-
-        // Load Add Tag Form
-        var currentNewsArticleId = '';
-        function loadAddTagForm(newsArticleId) {
-            currentNewsArticleId = newsArticleId;
-            $('#addTagModalTitle').text('Add Tag to Article');
-            
-            // Load danh sách tất cả tags
-            $.ajax({
-                url: '@Url.Action("GetAllTags", "NewsArticle")',
-                type: 'GET',
-                success: function(tags) {
-                    let tagSelect = `<select id="tagSelect" class="form-select">
-                                        <option value="">-- Select a Tag --</option>`;
-                    tags.forEach(function(tag) {
-                        tagSelect += `<option value="${tag.tagId}">${tag.tagName}</option>`;
-                    });
-                    tagSelect += `</select>`;
-                    
-                    $('#addTagModalBody').html(`
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="tagSelect" class="form-label">Choose Tag <span class="text-danger">*</span></label>
-                                ${tagSelect}
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-primary" onclick="addTagToArticle()">
-                                <i class="bi bi-plus-circle"></i> Add Tag
-                            </button>
-                        </div>
-                    `);
-                },
-                error: function() {
-                    alert('Error loading tags');
-                }
-            });
-        }
-
-        // Add Tag to Article
-        function addTagToArticle() {
-            const tagId = $('#tagSelect').val();
-            if (!tagId) {
-                alert('Please select a tag');
-                return;
-            }
-
-            $.ajax({
-                url: '@Url.Action("AddTag", "NewsArticle")',
-                type: 'POST',
-                data: { id: currentNewsArticleId, tagId: tagId },
-                success: function(response) {
-                    if (response.success) {
-                        alert('Tag added successfully!');
-                        location.reload();
-                    } else {
-                        alert('Error: ' + response.message);
-                    }
-                },
-                error: function(xhr) {
-                    alert('Error adding tag');
-                }
-            });
-        }
-
-        // Remove Tag from Article
-        function removeTag(newsArticleId, tagId) {
-            if (!confirm('Remove this tag?')) return;
-
-            $.ajax({
-                url: '@Url.Action("RemoveTag", "NewsArticle")',
-                type: 'POST',
-                data: { id: newsArticleId, tagId: tagId },
-                success: function(response) {
-                    if (response.success) {
-                        alert('Tag removed successfully!');
-                        location.reload();
-                    } else {
-                        alert('Error: ' + response.message);
-                    }
-                },
-                error: function(xhr) {
-                    alert('Error removing tag');
-                }
             });
         }
     </script>
