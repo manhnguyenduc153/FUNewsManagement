@@ -107,6 +107,12 @@
 
         <!-- CONTENT -->
         <main class="content">
+            <!-- Offline Banner -->
+            <div id="offlineBanner" class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 9999; display: none; width: 90%; max-width: 600px;" role="alert">
+                <i class="bi bi-wifi-off"></i> <strong>Offline Mode</strong> - API is unreachable. Displaying cached data. CRUD operations are disabled.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            
             @if (isLoggedIn)
             {
                 <div class="position-fixed top-0 end-0 p-3" style="z-index: 11">
@@ -262,6 +268,159 @@
     </script>
 
     @RenderSection("Scripts", required: false)
+
+    <script>
+        // Offline Mode Detection with Page Caching
+        let isOfflineMode = false;
+        const CACHE_KEY_PREFIX = 'funews_page_';
+        const CACHE_EXPIRY = 3600000; // 1 hour
+        
+        // Cache current page HTML
+        function cacheCurrentPage() {
+            try {
+                const pageKey = window.location.pathname;
+                const cacheItem = {
+                    html: document.documentElement.outerHTML,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(CACHE_KEY_PREFIX + pageKey, JSON.stringify(cacheItem));
+                console.log('[Cache] Saved page:', pageKey);
+            } catch (e) {
+                console.error('Cache page error:', e);
+            }
+        }
+        
+        // Get cached page HTML
+        function getCachedPage(pageKey) {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY_PREFIX + pageKey);
+                if (!cached) return null;
+                
+                const cacheItem = JSON.parse(cached);
+                if (Date.now() - cacheItem.timestamp > CACHE_EXPIRY) {
+                    localStorage.removeItem(CACHE_KEY_PREFIX + pageKey);
+                    return null;
+                }
+                
+                return cacheItem.html;
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        // Intercept jQuery AJAX for dynamic content
+        $(document).ajaxSuccess(function(event, xhr, settings) {
+            if (settings.type === 'GET') {
+                try {
+                    const data = xhr.responseText;
+                    localStorage.setItem(CACHE_KEY_PREFIX + settings.url, JSON.stringify({
+                        data: data,
+                        timestamp: Date.now()
+                    }));
+                    console.log('[Cache] Saved AJAX:', settings.url);
+                } catch (e) {}
+            }
+        });
+        
+        $(document).ajaxError(function(event, xhr, settings) {
+            if (isOfflineMode && settings.type === 'GET') {
+                try {
+                    const cached = localStorage.getItem(CACHE_KEY_PREFIX + settings.url);
+                    if (cached) {
+                        const cacheItem = JSON.parse(cached);
+                        if (Date.now() - cacheItem.timestamp < CACHE_EXPIRY) {
+                            console.log('[Cache] Using cached AJAX for:', settings.url);
+                            if (settings.success) {
+                                settings.success(cacheItem.data);
+                            }
+                        }
+                    }
+                } catch (e) {}
+            }
+        });
+        
+        async function checkApiConnectivity() {
+            try {
+                const response = await fetch('https://localhost:7053/api/tags/all', {
+                    method: 'GET',
+                    headers: { 'Authorization': 'Bearer ' + '@Html.Raw(Context.Session.GetString("AccessToken"))' },
+                    signal: AbortSignal.timeout(5000)
+                });
+                
+                setOfflineMode(!response.ok);
+            } catch (error) {
+                setOfflineMode(true);
+            }
+        }
+        
+        function setOfflineMode(offline) {
+            const wasOffline = isOfflineMode;
+            isOfflineMode = offline;
+            const banner = document.getElementById('offlineBanner');
+            
+            if (offline) {
+                banner.style.display = 'block';
+                console.log('[Offline Mode] Enabled - Page cached, CRUD disabled');
+                
+                // Disable all CRUD buttons
+                document.querySelectorAll('button[type="submit"], .btn-primary:not(.btn-close), .btn-danger, .btn-warning').forEach(btn => {
+                    if (!btn.id.includes('notification') && !btn.classList.contains('btn-close')) {
+                        btn.disabled = true;
+                        btn.title = 'Disabled in offline mode';
+                    }
+                });
+                
+                // Prevent form submissions
+                document.querySelectorAll('form').forEach(form => {
+                    form.addEventListener('submit', function(e) {
+                        if (isOfflineMode) {
+                            e.preventDefault();
+                            alert('CRUD operations are disabled in offline mode');
+                        }
+                    });
+                });
+                
+                // Disable links that would navigate away
+                document.querySelectorAll('a[href^="/"]').forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        const href = this.getAttribute('href');
+                        const cachedPage = getCachedPage(href);
+                        if (!cachedPage) {
+                            e.preventDefault();
+                            alert('This page is not available offline. Please reconnect to the internet.');
+                        }
+                    });
+                });
+            } else {
+                banner.style.display = 'none';
+                if (wasOffline) {
+                    console.log('[Online Mode] Enabled');
+                }
+                
+                // Re-enable buttons
+                document.querySelectorAll('button[type="submit"], .btn-primary, .btn-danger, .btn-warning').forEach(btn => {
+                    btn.disabled = false;
+                    btn.title = '';
+                });
+            }
+        }
+        
+        // Cache page on load (when online)
+        window.addEventListener('load', () => {
+            checkApiConnectivity().then(() => {
+                if (!isOfflineMode) {
+                    cacheCurrentPage();
+                }
+            });
+            
+            // Check every 30 seconds
+            setInterval(checkApiConnectivity, 30000);
+        });
+        
+        // Check when online/offline events fire
+        window.addEventListener('online', () => checkApiConnectivity());
+        window.addEventListener('offline', () => setOfflineMode(true));
+    </script>
 
 </body>
 </html>
