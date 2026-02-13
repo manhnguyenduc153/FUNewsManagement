@@ -1,11 +1,12 @@
-using NguyenDucManh_SE1884_A01_BE.Dto;
-using NguyenDucManh_SE1884_A01_BE.Dto.Common;
-using NguyenDucManh_SE1884_A01_BE.Models;
-using NguyenDucManh_SE1884_A01_BE.Repositories.IRepositories;
-using NguyenDucManh_SE1884_A01_BE.DTOs.Common;
-using NguyenDucManh_SE1884_A01_BE.Services.IServices;
 using Mapster;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using NguyenDucManh_SE1884_A01_BE.Dto;
+using NguyenDucManh_SE1884_A01_BE.Dto.Common;
+using NguyenDucManh_SE1884_A01_BE.DTOs.Common;
+using NguyenDucManh_SE1884_A01_BE.Models;
+using NguyenDucManh_SE1884_A01_BE.Repositories.IRepositories;
+using NguyenDucManh_SE1884_A01_BE.Services.IServices;
 
 namespace NguyenDucManh_SE1884_A01_BE.Services
 {
@@ -443,7 +444,60 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
 
             return ApiResponse<bool>.Ok(true, "View count incremented");
         }
+
+        public async Task<IEnumerable<NewsArticleDto>> GetAllFilteredAsync(NewsArticleSearchDto dto)
+        {
+            var query = _context.Set<NewsArticle>()
+                .Include(x => x.Category)
+                .Include(x => x.CreatedBy)
+                .Include(x => x.UpdatedBy)
+                .Include(x => x.Tags)
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (dto.CategoryId.HasValue && dto.CategoryId > 0)
+                query = query.Where(x => x.CategoryId == dto.CategoryId);
+
+            if (dto.AuthorId.HasValue && dto.AuthorId > 0)
+                query = query.Where(x => x.CreatedById == dto.AuthorId);
+
+            if (dto.Status.HasValue)
+                query = query.Where(x => x.NewsStatus == dto.Status);
+
+            if (dto.FromDate.HasValue)
+                query = query.Where(x => x.CreatedDate >= dto.FromDate);
+
+            if (dto.ToDate.HasValue)
+                query = query.Where(x => x.CreatedDate <= dto.ToDate);
+
+            var newsArticles = await query.ToListAsync();
+
+            return newsArticles.Select(na => new NewsArticleDto
+            {
+                NewsArticleId = na.NewsArticleId,
+                NewsArticleName = na.NewsArticleId,
+                NewsTitle = na.NewsTitle,
+                Headline = na.Headline,
+                CreatedDate = na.CreatedDate,
+                NewsContent = na.NewsContent,
+                NewsSource = na.NewsSource,
+                CategoryId = na.CategoryId,
+                CategoryName = na.Category?.CategoryName,
+                NewsStatus = na.NewsStatus,
+                CreatedById = na.CreatedById,
+                CreatedByName = na.CreatedById == 0 ? "Admin" : na.CreatedBy?.AccountName,
+                UpdatedById = na.UpdatedById,
+                UpdatedByName = na.UpdatedById == 0 ? "Admin" : na.UpdatedBy?.AccountName,
+                ModifiedDate = na.ModifiedDate,
+                ImageUrl = na.ImageUrl,
+                ViewCount = na.ViewCount,
+                Tags = na.Tags.Adapt<ICollection<TagDto>>()
+            }).ToList();
+        }
+
     }
 }
 
 
+
+      

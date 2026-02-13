@@ -53,6 +53,11 @@ namespace NguyenDucManh_SE1884_A01_BE.Repositories
                 query = query.Where(x => x.CategoryId == searchDto.CategoryId);
             }
 
+            if (searchDto.AuthorId.HasValue && searchDto.AuthorId > 0)
+            {
+                query = query.Where(x => x.CreatedById == searchDto.AuthorId);
+            }
+
             
             if (searchDto.Status.HasValue)
             {

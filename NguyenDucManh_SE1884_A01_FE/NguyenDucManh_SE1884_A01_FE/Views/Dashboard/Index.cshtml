@@ -1,11 +1,58 @@
 @model Assignmen_PRN232__.Dto.DashboardDto
+@using Assignmen_PRN232__.Dto
 
 @{
     ViewData["PageTitle"] = "Dashboard";
+    var filter = ViewBag.Filter as AnalyticsFilterDto ?? new AnalyticsFilterDto();
+    var categories = ViewBag.Categories as List<CategoryDto> ?? new List<CategoryDto>();
+    var authors = ViewBag.Authors as List<SystemAccountDto> ?? new List<SystemAccountDto>();
 }
 
 <div class="container-fluid mt-4">
     <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">From Date</label>
+                    <input type="date" name="fromDate" value="@filter.FromDate?.ToString("yyyy-MM-dd")" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">To Date</label>
+                    <input type="date" name="toDate" value="@filter.ToDate?.ToString("yyyy-MM-dd")" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Category</label>
+                    <select name="categoryId" class="form-select">
+                        <option value="">All</option>
+                        @foreach (var cat in categories)
+                        {
+                            <option value="@cat.CategoryId" selected="@(filter.CategoryId == cat.CategoryId)">@cat.CategoryName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Author</label>
+                    <select name="authorId" class="form-select">
+                        <option value="">All</option>
+                        @foreach (var author in authors)
+                        {
+                            <option value="@author.AccountId" selected="@(filter.AuthorId == author.AccountId)">@author.AccountName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search"></i> Filter
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div class="row mt-4">
         <div class="col-md-6">

@@ -4,8 +4,10 @@ namespace NguyenDucManh_SE1884_A01_Analytic.Services
 {
     public interface IAnalyticsService
     {
-        Task<DashboardDto> GetDashboardAsync(string token);
+        Task<DashboardDto> GetDashboardAsync(string token, AnalyticsFilterDto? filter = null);
         Task<List<TrendingArticleDto>> GetTrendingAsync(string token, AnalyticsFilterDto filter);
+        Task<List<CategoryDto>> GetCategoriesAsync(string token);
+        Task<List<SystemAccountDto>> GetAuthorsAsync(string token);
     }
 
     public class AnalyticsService : IAnalyticsService
@@ -19,15 +21,27 @@ namespace NguyenDucManh_SE1884_A01_Analytic.Services
             _configuration = configuration;
         }
 
-        public async Task<DashboardDto> GetDashboardAsync(string token)
+        public async Task<DashboardDto> GetDashboardAsync(string token, AnalyticsFilterDto? filter = null)
         {
             var client = _httpClientFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             var baseUrl = _configuration["CoreApiUrl"] ?? "https://localhost:7053";
 
-            Console.WriteLine($"Calling: {baseUrl}/api/report/news-articles");
-            var reportResponse = await client.GetAsync($"{baseUrl}/api/report/news-articles");
+            var queryParams = new List<string>();
+            if (filter?.FromDate.HasValue == true)
+                queryParams.Add($"FromDate={filter.FromDate.Value:yyyy-MM-dd}");
+            if (filter?.ToDate.HasValue == true)
+                queryParams.Add($"ToDate={filter.ToDate.Value:yyyy-MM-dd}");
+            if (filter?.CategoryId.HasValue == true)
+                queryParams.Add($"CategoryId={filter.CategoryId}");
+            if (filter?.AuthorId.HasValue == true)
+                queryParams.Add($"AuthorId={filter.AuthorId}");
+
+            var query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+
+            Console.WriteLine($"Calling: {baseUrl}/api/report/news-articles{query}");
+            var reportResponse = await client.GetAsync($"{baseUrl}/api/report/news-articles{query}");
             Console.WriteLine($"Report Response: {reportResponse.StatusCode}");
             reportResponse.EnsureSuccessStatusCode();
             
@@ -68,6 +82,8 @@ namespace NguyenDucManh_SE1884_A01_Analytic.Services
                 queryParams.Add($"CategoryId={filter.CategoryId}");
             if (filter.AuthorId.HasValue)
                 queryParams.Add($"AuthorId={filter.AuthorId}");
+            if (filter.Status.HasValue)
+                queryParams.Add($"Status={filter.Status}");
 
             var query = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
 
@@ -78,6 +94,11 @@ namespace NguyenDucManh_SE1884_A01_Analytic.Services
             Console.WriteLine($"API Response: {articlesJson.Substring(0, Math.Min(500, articlesJson.Length))}");
             
             var articles = await articlesResponse.Content.ReadFromJsonAsync<List<NewsArticleDto>>();
+
+            if (filter.Status.HasValue)
+            {
+                articles = articles?.Where(a => a.NewsStatus == filter.Status).ToList();
+            }
 
             Console.WriteLine($"Articles fetched: {articles?.Count}");
             if (articles != null && articles.Any())
@@ -98,6 +119,26 @@ namespace NguyenDucManh_SE1884_A01_Analytic.Services
                     CreatedDate = a.CreatedDate
                 })
                 .ToList();
+        }
+
+        public async Task<List<CategoryDto>> GetCategoriesAsync(string token)
+        {
+            var client = _httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var baseUrl = _configuration["CoreApiUrl"] ?? "https://localhost:7053";
+            var response = await client.GetAsync($"{baseUrl}/api/categories/all");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<CategoryDto>>() ?? new();
+        }
+
+        public async Task<List<SystemAccountDto>> GetAuthorsAsync(string token)
+        {
+            var client = _httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var baseUrl = _configuration["CoreApiUrl"] ?? "https://localhost:7053";
+            var response = await client.GetAsync($"{baseUrl}/api/systemaccounts/all");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<SystemAccountDto>>() ?? new();
         }
     }
 }

@@ -18,10 +18,10 @@ namespace NguyenDucManh_SE1884_A01_Analytic.Controllers
         }
 
         [HttpGet("dashboard")]
-        public async Task<ActionResult<DashboardDto>> GetDashboard()
+        public async Task<ActionResult<DashboardDto>> GetDashboard([FromQuery] AnalyticsFilterDto? filter)
         {
             var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var result = await _analyticsService.GetDashboardAsync(token);
+            var result = await _analyticsService.GetDashboardAsync(token, filter);
             return Ok(result);
         }
 
@@ -47,6 +47,22 @@ namespace NguyenDucManh_SE1884_A01_Analytic.Controllers
             
             var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
             return File(bytes, "text/csv", $"trending_{DateTime.Now:yyyyMMdd}.csv");
+        }
+
+        [HttpGet("categories")]
+        public async Task<ActionResult<List<CategoryDto>>> GetCategories()
+        {
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var result = await _analyticsService.GetCategoriesAsync(token);
+            return Ok(result);
+        }
+
+        [HttpGet("authors")]
+        public async Task<ActionResult<List<SystemAccountDto>>> GetAuthors()
+        {
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var result = await _analyticsService.GetAuthorsAsync(token);
+            return Ok(result);
         }
     }
 }

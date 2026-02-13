@@ -17,5 +17,6 @@ namespace Assignmen_PRN232__.Dto
         public int? CategoryId { get; set; }
         public int? AuthorId { get; set; }
         public int Top { get; set; } = 10;
+        public bool? Status { get; set; }
     }
 }

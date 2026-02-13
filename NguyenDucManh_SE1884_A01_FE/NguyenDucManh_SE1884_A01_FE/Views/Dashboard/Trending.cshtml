@@ -18,6 +18,7 @@
                 <input type="hidden" name="toDate" value="@filter.ToDate?.ToString("yyyy-MM-dd")" />
                 <input type="hidden" name="categoryId" value="@filter.CategoryId" />
                 <input type="hidden" name="authorId" value="@filter.AuthorId" />
+                <input type="hidden" name="status" value="@filter.Status" />
                 <button type="submit" class="btn btn-success">
                     <i class="bi bi-download"></i> Export CSV
                 </button>
@@ -28,24 +29,52 @@
     <div class="card mb-4">
         <div class="card-body">
             <form asp-action="Trending" method="get" class="row g-3">
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <label class="form-label">Top</label>
                     <input type="number" name="top" value="@filter.Top" class="form-control" min="1" max="100">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label">From Date</label>
                     <input type="date" name="fromDate" value="@filter.FromDate?.ToString("yyyy-MM-dd")" class="form-control">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label">To Date</label>
                     <input type="date" name="toDate" value="@filter.ToDate?.ToString("yyyy-MM-dd")" class="form-control">
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label">Category</label>
+                    <select name="categoryId" class="form-select">
+                        <option value="">All</option>
+                        @foreach (var cat in ViewBag.Categories as List<CategoryDto> ?? new List<CategoryDto>())
+                        {
+                            <option value="@cat.CategoryId" selected="@(filter.CategoryId == cat.CategoryId)">@cat.CategoryName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Author</label>
+                    <select name="authorId" class="form-select">
+                        <option value="">All</option>
+                        @foreach (var author in ViewBag.Authors as List<SystemAccountDto> ?? new List<SystemAccountDto>())
+                        {
+                            <option value="@author.AccountId" selected="@(filter.AuthorId == author.AccountId)">@author.AccountName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All</option>
+                        <option value="true" selected="@(filter.Status == true)">Active</option>
+                        <option value="false" selected="@(filter.Status == false)">Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary me-2">
                         <i class="bi bi-search"></i> Search
                     </button>
                     <a asp-action="Trending" class="btn btn-secondary">
-                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        <i class="bi bi-arrow-counterclockwise"></i>
                     </a>
                 </div>
             </form>

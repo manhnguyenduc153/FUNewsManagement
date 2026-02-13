@@ -9,6 +9,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Services.IServices
         Task<PagingResponse<NewsArticleDto>> GetListPagingAsync(NewsArticleSearchDto dto);
         Task<PagingResponse<NewsArticleDto>> GetPublicListPagingAsync(NewsArticleSearchDto dto);
         Task<IEnumerable<NewsArticleDto>> GetAllAsync();
+        Task<IEnumerable<NewsArticleDto>> GetAllFilteredAsync(NewsArticleSearchDto dto);
         Task<NewsArticleDto?> GetByIdAsync(string id);
 
         Task<ApiResponse<NewsArticleDto>> CreateOrEditAsync(NewsArticleSaveDto dto);

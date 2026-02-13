@@ -81,6 +81,8 @@ namespace NguyenDucManh_SE1884_A01_BE.Dto
         public string? Title { get; set; }
         public string? Author { get; set; }
         public short? CategoryId { get; set; }
+        public short? AuthorId { get; set; }
+        public bool? Status { get; set; }
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
         public short? CreatedById { get; set; }

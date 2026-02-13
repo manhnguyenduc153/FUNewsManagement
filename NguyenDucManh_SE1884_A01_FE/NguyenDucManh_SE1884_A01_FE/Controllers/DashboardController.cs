@@ -13,11 +13,17 @@ namespace Frontend.Controllers
             _dashboardService = dashboardService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(AnalyticsFilterDto filter)
         {
             try
             {
-                var dashboard = await _dashboardService.GetDashboardAsync();
+                var dashboard = await _dashboardService.GetDashboardAsync(filter);
+                var categories = await _dashboardService.GetCategoriesAsync();
+                var authors = await _dashboardService.GetAuthorsAsync();
+                
+                ViewBag.Filter = filter;
+                ViewBag.Categories = categories ?? new List<CategoryDto>();
+                ViewBag.Authors = authors ?? new List<SystemAccountDto>();
                 return View(dashboard);
             }
             catch (Exception ex)
@@ -33,7 +39,12 @@ namespace Frontend.Controllers
             {
                 filter.Top = filter.Top > 0 ? filter.Top : 10;
                 var trending = await _dashboardService.GetTrendingAsync(filter);
+                var categories = await _dashboardService.GetCategoriesAsync();
+                var authors = await _dashboardService.GetAuthorsAsync();
+                
                 ViewBag.Filter = filter;
+                ViewBag.Categories = categories ?? new List<CategoryDto>();
+                ViewBag.Authors = authors ?? new List<SystemAccountDto>();
                 return View(trending);
             }
             catch (Exception ex)

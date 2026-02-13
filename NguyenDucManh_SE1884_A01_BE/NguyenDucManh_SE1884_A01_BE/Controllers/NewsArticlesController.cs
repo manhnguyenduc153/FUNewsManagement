@@ -36,9 +36,9 @@ namespace NguyenDucManh_SE1884_A01_BE.Controllers.Api
 
         
         [HttpGet("all")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] NewsArticleSearchDto dto)
         {
-            var result = await _newsArticleService.GetAllAsync();
+            var result = await _newsArticleService.GetAllFilteredAsync(dto);
             return Ok(result);
         }
 
