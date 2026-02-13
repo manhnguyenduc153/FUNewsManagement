@@ -30,8 +30,27 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
         {
             var newsArticles = await _newsArticleRepository.GetAllAsync();
 
-            
-            var result = newsArticles.Adapt<IEnumerable<NewsArticleDto>>();
+            var result = newsArticles.Select(na => new NewsArticleDto
+            {
+                NewsArticleId = na.NewsArticleId,
+                NewsArticleName = na.NewsArticleId,
+                NewsTitle = na.NewsTitle,
+                Headline = na.Headline,
+                CreatedDate = na.CreatedDate,
+                NewsContent = na.NewsContent,
+                NewsSource = na.NewsSource,
+                CategoryId = na.CategoryId,
+                CategoryName = na.Category?.CategoryName,
+                NewsStatus = na.NewsStatus,
+                CreatedById = na.CreatedById,
+                CreatedByName = na.CreatedById == 0 ? "Admin" : na.CreatedBy?.AccountName,
+                UpdatedById = na.UpdatedById,
+                UpdatedByName = na.UpdatedById == 0 ? "Admin" : na.UpdatedBy?.AccountName,
+                ModifiedDate = na.ModifiedDate,
+                ImageUrl = na.ImageUrl,
+                ViewCount = na.ViewCount,
+                Tags = na.Tags.Adapt<ICollection<TagDto>>()
+            }).ToList();
 
             return result;
         }

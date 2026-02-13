@@ -128,5 +128,16 @@ namespace NguyenDucManh_SE1884_A01_BE.Repositories
 
             return relatedArticles;
         }
+
+        public async Task<IEnumerable<NewsArticle>> GetAllAsync()
+        {
+            return await _dbContext.Set<NewsArticle>()
+                .Include(x => x.Category)
+                .Include(x => x.CreatedBy)
+                .Include(x => x.UpdatedBy)
+                .Include(x => x.Tags)
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 }

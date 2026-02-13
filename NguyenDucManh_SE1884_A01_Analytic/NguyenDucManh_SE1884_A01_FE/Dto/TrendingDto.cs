@@ -19,3 +19,14 @@ namespace NguyenDucManh_SE1884_A01_Analytic.Dto
         public int Top { get; set; } = 10;
     }
 }
+
+
+    public class NewsArticleDto
+    {
+        public string NewsArticleId { get; set; } = null!;
+        public string? NewsTitle { get; set; }
+        public string? CategoryName { get; set; }
+        public string? CreatedByName { get; set; }
+        public int ViewCount { get; set; }
+        public DateTime? CreatedDate { get; set; }
+    }

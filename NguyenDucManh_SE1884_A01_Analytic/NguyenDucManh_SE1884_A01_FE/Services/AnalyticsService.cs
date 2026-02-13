@@ -73,12 +73,16 @@ namespace NguyenDucManh_SE1884_A01_Analytic.Services
 
             var articlesResponse = await client.GetAsync($"{baseUrl}/api/newsarticles/all{query}");
             articlesResponse.EnsureSuccessStatusCode();
-            var articles = await articlesResponse.Content.ReadFromJsonAsync<List<NewsArticleFullDto>>();
+            
+            var articlesJson = await articlesResponse.Content.ReadAsStringAsync();
+            Console.WriteLine($"API Response: {articlesJson.Substring(0, Math.Min(500, articlesJson.Length))}");
+            
+            var articles = await articlesResponse.Content.ReadFromJsonAsync<List<NewsArticleDto>>();
 
             Console.WriteLine($"Articles fetched: {articles?.Count}");
             if (articles != null && articles.Any())
             {
-                Console.WriteLine($"First article ViewCount: {articles[0].ViewCount}");
+                Console.WriteLine($"First article: {articles[0].NewsTitle}, Category: {articles[0].CategoryName}, Author: {articles[0].CreatedByName}");
             }
 
             return articles!
@@ -86,8 +90,8 @@ namespace NguyenDucManh_SE1884_A01_Analytic.Services
                 .Take(filter.Top)
                 .Select(a => new TrendingArticleDto
                 {
-                    NewsArticleId = a.NewsArticleId!,
-                    NewsTitle = a.NewsTitle!,
+                    NewsArticleId = a.NewsArticleId,
+                    NewsTitle = a.NewsTitle ?? "N/A",
                     CategoryName = a.CategoryName ?? "N/A",
                     AuthorName = a.CreatedByName ?? "N/A",
                     ViewCount = a.ViewCount,
