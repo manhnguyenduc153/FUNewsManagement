@@ -5,5 +5,6 @@ namespace NguyenDucManh_SE1884_A01_AIAPI.Services.IServices
     public interface IAIService
     {
         Task<SuggestTagsResponse> SuggestTagsAsync(string content);
+        void RecordTagSelections(List<int> tagIds);
     }
 }

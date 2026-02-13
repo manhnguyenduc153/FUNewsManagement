@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 
+builder.Services.AddSingleton<ITagLearningCache, TagLearningCache>();
 builder.Services.AddScoped<IAIService, AIService>();
 
 builder.Services.AddCors(options =>

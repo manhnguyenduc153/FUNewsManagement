@@ -3,6 +3,7 @@ namespace NguyenDucManh_SE1884_A01_AIAPI.Dto
     public class SuggestTagsRequest
     {
         public string Content { get; set; } = string.Empty;
+        public List<int>? SelectedTagIds { get; set; }
     }
 
     public class SuggestTagsResponse
@@ -14,5 +15,10 @@ namespace NguyenDucManh_SE1884_A01_AIAPI.Dto
     {
         public int TagId { get; set; }
         public string TagName { get; set; } = string.Empty;
+    }
+
+    public class RecordTagRequest
+    {
+        public List<int> TagIds { get; set; } = new();
     }
 }

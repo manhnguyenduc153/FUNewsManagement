@@ -33,5 +33,17 @@ namespace NguyenDucManh_SE1884_A01_AIAPI.Controllers
             var result = await _aiService.SuggestTagsAsync(request.Content);
             return Ok(result);
         }
+
+        [HttpPost("record-tag-selection")]
+        public IActionResult RecordTagSelection([FromBody] RecordTagRequest request)
+        {
+            if (request.TagIds == null || !request.TagIds.Any())
+            {
+                return BadRequest(new { message = "TagIds are required" });
+            }
+
+            _aiService.RecordTagSelections(request.TagIds);
+            return Ok(new { message = "Tag selections recorded" });
+        }
     }
 }

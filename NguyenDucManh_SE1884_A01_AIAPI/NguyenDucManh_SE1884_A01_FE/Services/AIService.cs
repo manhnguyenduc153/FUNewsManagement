@@ -10,15 +10,17 @@ namespace NguyenDucManh_SE1884_A01_AIAPI.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AIService> _logger;
+        private readonly ITagLearningCache _tagLearningCache;
         private const string GEMINI_API_KEY = "AIzaSyB2iC9jf2Gu-NabjXAkClVDMBjntF41icY";
         private const string GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 
-        public AIService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<AIService> logger)
+        public AIService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<AIService> logger, ITagLearningCache tagLearningCache)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _logger = logger;
+            _tagLearningCache = tagLearningCache;
         }
 
         public async Task<SuggestTagsResponse> SuggestTagsAsync(string content)
@@ -39,6 +41,11 @@ namespace NguyenDucManh_SE1884_A01_AIAPI.Services
             var suggestedTagNames = await AnalyzeContentWithGeminiAsync(content, allTags);
             _logger.LogInformation("[AI] Gemini suggested {Count} tags: {Tags}", suggestedTagNames.Count, string.Join(", ", suggestedTagNames));
             
+            // 2.5. Boost frequently selected tags
+            var frequentTagIds = _tagLearningCache.GetFrequentTags(3);
+            var frequentTags = allTags.Where(t => frequentTagIds.Contains(t.TagId)).Select(t => t.TagName).ToList();
+            _logger.LogInformation("[AI] Frequent tags from cache: {Tags}", string.Join(", ", frequentTags));
+            
             if (!suggestedTagNames.Any())
             {
                 _logger.LogWarning("[AI] Gemini returned no suggestions");
@@ -47,6 +54,19 @@ namespace NguyenDucManh_SE1884_A01_AIAPI.Services
 
             // 3. Match suggested names with actual tags (flexible matching)
             var matchedTags = new List<TagSuggestion>();
+            
+            // Prioritize frequent tags if they match
+            foreach (var frequentTagId in frequentTagIds)
+            {
+                var frequentTag = allTags.FirstOrDefault(t => t.TagId == frequentTagId);
+                if (frequentTag != null && suggestedTagNames.Any(s => 
+                    s.Equals(frequentTag.TagName, StringComparison.OrdinalIgnoreCase) ||
+                    s.Contains(frequentTag.TagName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    matchedTags.Add(new TagSuggestion { TagId = frequentTag.TagId, TagName = frequentTag.TagName });
+                    _logger.LogInformation("[AI] Boosted frequent tag: {Tag}", frequentTag.TagName);
+                }
+            }
             
             foreach (var suggestedName in suggestedTagNames)
             {
@@ -189,6 +209,15 @@ Tags:";
             }
 
             return new List<string>();
+        }
+
+        public void RecordTagSelections(List<int> tagIds)
+        {
+            foreach (var tagId in tagIds)
+            {
+                _tagLearningCache.RecordTagSelection(tagId);
+            }
+            _logger.LogInformation("[AI] Recorded {Count} tag selections", tagIds.Count);
         }
 
         private class TagDto
