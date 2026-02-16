@@ -3,6 +3,7 @@ using NguyenDucManh_SE1884_A01_BE.Dto;
 using NguyenDucManh_SE1884_A01_BE.Models;
 using NguyenDucManh_SE1884_A01_BE.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -13,7 +14,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddOData(options => options
+    .Select()
+    .Filter()
+    .OrderBy()
+    .Expand()
+    .Count()
+    .SetMaxTop(100));
 
 builder.Services.AddSignalR();
 

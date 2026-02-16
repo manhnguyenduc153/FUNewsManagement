@@ -3,6 +3,8 @@ using NguyenDucManh_SE1884_A01_BE.Dto.Common;
 using NguyenDucManh_SE1884_A01_BE.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
+using NguyenDucManh_SE1884_A01_BE.Models;
 
 namespace NguyenDucManh_SE1884_A01_BE.Controllers.Api
 {
@@ -12,10 +14,12 @@ namespace NguyenDucManh_SE1884_A01_BE.Controllers.Api
     public class TagsController : ControllerBase
     {
         private readonly ITagService _tagService;
+        private readonly AppDbContext _context;
 
-        public TagsController(ITagService tagService)
+        public TagsController(ITagService tagService, AppDbContext context)
         {
             _tagService = tagService;
+            _context = context;
         }
 
         
@@ -25,6 +29,15 @@ namespace NguyenDucManh_SE1884_A01_BE.Controllers.Api
         {
             var result = await _tagService.GetAllAsync();
             return Ok(result);
+        }
+
+        
+        [AllowAnonymous]
+        [HttpGet("odata")]
+        [EnableQuery]
+        public IActionResult GetOData()
+        {
+            return Ok(_context.Tags.AsQueryable());
         }
 
         
