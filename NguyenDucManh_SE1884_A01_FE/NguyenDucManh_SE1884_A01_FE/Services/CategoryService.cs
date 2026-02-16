@@ -54,14 +54,15 @@ namespace Frontend.Services
         {
             try
             {
-                var searchDto = new CategorySearchDto
-                {
-                    PageIndex = 1,
-                    PageSize = 1000 // Lấy nhiều để có tất cả
-                };
+                var response = await _httpClient.GetAsync("https://localhost:7053/api/Categories/odata");
 
-                var result = await GetListPagingAsync(searchDto);
-                return result.Items?.ToList() ?? new List<CategoryDto>();
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new List<CategoryDto>();
+                }
+
+                var odataResponse = await response.Content.ReadFromJsonAsync<ODataResponse<CategoryDto>>();
+                return odataResponse?.Value ?? new List<CategoryDto>();
             }
             catch (Exception ex)
             {

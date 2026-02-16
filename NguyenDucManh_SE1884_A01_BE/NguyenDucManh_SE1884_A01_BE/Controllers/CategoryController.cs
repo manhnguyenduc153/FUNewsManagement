@@ -2,6 +2,8 @@ using NguyenDucManh_SE1884_A01_BE.Services.IServices;
 using NguyenDucManh_SE1884_A01_BE.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
+using NguyenDucManh_SE1884_A01_BE.Models;
 
 namespace NguyenDucManh_SE1884_A01_BE.Controllers.Api
 {
@@ -11,10 +13,12 @@ namespace NguyenDucManh_SE1884_A01_BE.Controllers.Api
     public class CategoriesController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
+        private readonly AppDbContext _context;
 
-        public CategoriesController(ICategoryService categoryService)
+        public CategoriesController(ICategoryService categoryService, AppDbContext context)
         {
             _categoryService = categoryService;
+            _context = context;
         }
 
         
@@ -31,6 +35,14 @@ namespace NguyenDucManh_SE1884_A01_BE.Controllers.Api
         {
             var result = await _categoryService.GetAllAsync();
             return Ok(result);
+        }
+
+        
+        [HttpGet("odata")]
+        [EnableQuery]
+        public IActionResult GetOData()
+        {
+            return Ok(_context.Categories.AsQueryable());
         }
 
         
