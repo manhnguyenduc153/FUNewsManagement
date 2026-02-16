@@ -55,15 +55,15 @@ namespace Frontend.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync("Tags/odata");
+                var response = await _httpClient.GetAsync("Tags/all");
 
                 if (!response.IsSuccessStatusCode)
                 {
                     return new List<TagDto>();
                 }
 
-                var odataResponse = await response.Content.ReadFromJsonAsync<ODataResponse<TagDto>>();
-                return odataResponse?.Value ?? new List<TagDto>();
+                var tags = await response.Content.ReadFromJsonAsync<List<TagDto>>();
+                return tags ?? new List<TagDto>();
             }
             catch (Exception ex)
             {

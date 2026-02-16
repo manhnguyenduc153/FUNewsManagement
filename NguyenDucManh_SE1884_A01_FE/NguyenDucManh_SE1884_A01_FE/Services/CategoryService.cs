@@ -54,15 +54,15 @@ namespace Frontend.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync("https://localhost:7053/api/Categories/odata");
+                var response = await _httpClient.GetAsync("https://localhost:7053/api/Categories/all");
 
                 if (!response.IsSuccessStatusCode)
                 {
                     return new List<CategoryDto>();
                 }
 
-                var odataResponse = await response.Content.ReadFromJsonAsync<ODataResponse<CategoryDto>>();
-                return odataResponse?.Value ?? new List<CategoryDto>();
+                var categories = await response.Content.ReadFromJsonAsync<List<CategoryDto>>();
+                return categories ?? new List<CategoryDto>();
             }
             catch (Exception ex)
             {

@@ -11,7 +11,7 @@ namespace NguyenDucManh_SE1884_A01_AIAPI.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<AIService> _logger;
         private readonly ITagLearningCache _tagLearningCache;
-        private const string GEMINI_API_KEY = "AIzaSyB2iC9jf2Gu-NabjXAkClVDMBjntF41icY";
+        private const string GEMINI_API_KEY = "AIzaSyBvyiqJ8Uumh3IxsW-m1IcjUQoWeG9nc80";
         private const string GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 
