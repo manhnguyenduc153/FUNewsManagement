@@ -20,3 +20,14 @@ $(document).ajaxStop(function() {
 $(document).on('submit', 'form', function() {
     showLoading();
 });
+
+// Sidebar active state
+$(document).ready(function() {
+    const currentPath = window.location.pathname;
+    $('.sidebar-nav a').each(function() {
+        const href = $(this).attr('href');
+        if (href && (currentPath === href || currentPath.startsWith(href + '/'))) {
+            $(this).addClass('active');
+        }
+    });
+});

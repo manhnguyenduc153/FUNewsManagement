@@ -46,6 +46,12 @@ html, body {
         background: #e6e6e6;
     }
 
+    .sidebar-nav a.active {
+        background: #e6e6e6;
+        color: #333;
+        font-weight: 600;
+    }
+
 /* Sidebar subtitle */
 .sidebar-subtitle {
     font-size: 12px;
