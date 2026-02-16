@@ -1,4 +1,22 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿// Loading Indicator
+window.showLoading = function() {
+    $('#loadingIndicator').css('display', 'flex');
+};
 
-// Write your JavaScript code.
+window.hideLoading = function() {
+    $('#loadingIndicator').hide();
+};
+
+// Auto show loading for all AJAX requests
+$(document).ajaxStart(function() {
+    showLoading();
+});
+
+$(document).ajaxStop(function() {
+    hideLoading();
+});
+
+// Auto show loading for form submissions
+$(document).on('submit', 'form', function() {
+    showLoading();
+});
