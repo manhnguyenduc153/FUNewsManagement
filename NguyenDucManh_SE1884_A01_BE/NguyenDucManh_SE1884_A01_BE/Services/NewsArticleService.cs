@@ -299,6 +299,17 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
 
             await _newsArticleRepository.SaveChangesAsync();
 
+            var message = $"Article updated: {existing.NewsTitle}";
+            _context.Notifications.Add(new Notification
+            {
+                Message = message,
+                CreatedAt = DateTime.Now,
+                IsRead = false
+            });
+            await _context.SaveChangesAsync();
+
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", message);
+
             return ApiResponse<NewsArticleDto>.Ok(
                 existing.Adapt<NewsArticleDto>(),
                 "Updated successfully"
@@ -374,11 +385,24 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
                 if (newsArticle == null)
                     return ApiResponse<bool>.Fail("News article not found");
 
+                var title = newsArticle.NewsTitle;
+
                 newsArticle.Tags.Clear();
                 await _newsArticleRepository.SaveChangesAsync();
 
                 await _newsArticleRepository.DeleteAsync(newsArticle);
                 await _newsArticleRepository.SaveChangesAsync();
+
+                var message = $"Article deleted: {title}";
+                _context.Notifications.Add(new Notification
+                {
+                    Message = message,
+                    CreatedAt = DateTime.Now,
+                    IsRead = false
+                });
+                await _context.SaveChangesAsync();
+
+                await _hubContext.Clients.All.SendAsync("ReceiveNotification", message);
 
                 return ApiResponse<bool>.Ok(true, "Deleted successfully");
             } catch (Exception ex)
