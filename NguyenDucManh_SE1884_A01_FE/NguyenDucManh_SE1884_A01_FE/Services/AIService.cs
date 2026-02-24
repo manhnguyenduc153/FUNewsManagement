@@ -8,7 +8,7 @@ namespace Frontend.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<AIService> _logger;
-        private const string AI_API_BASE_URL = "https://localhost:7200";
+        private const string AI_API_BASE_URL = "https://localhost:7300";
 
         public AIService(HttpClient httpClient, ILogger<AIService> logger)
         {

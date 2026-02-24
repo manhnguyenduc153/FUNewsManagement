@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Concurrent;
 
 namespace Frontend.Handlers
 {
@@ -6,6 +7,7 @@ namespace Frontend.Handlers
     {
         private readonly IMemoryCache _cache;
         private readonly ILogger<CachingHandler> _logger;
+        private static readonly ConcurrentBag<string> _cacheKeys = new();
 
         public CachingHandler(IMemoryCache cache, ILogger<CachingHandler> logger)
         {
@@ -15,6 +17,18 @@ namespace Frontend.Handlers
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            // Clear all cache for POST/PUT/DELETE requests
+            if (request.Method == HttpMethod.Post || request.Method == HttpMethod.Put || request.Method == HttpMethod.Delete)
+            {
+                foreach (var key in _cacheKeys)
+                {
+                    _cache.Remove(key);
+                }
+                _cacheKeys.Clear();
+                _logger.LogInformation("[Cache] Cleared all cache after {Method}", request.Method);
+                return await base.SendAsync(request, cancellationToken);
+            }
+
             // Only cache GET requests
             if (request.Method != HttpMethod.Get)
             {
@@ -44,6 +58,7 @@ namespace Frontend.Handlers
                     
                     // Cache for 5 minutes
                     _cache.Set(cacheKey, content, TimeSpan.FromMinutes(5));
+                    _cacheKeys.Add(cacheKey);
                     _logger.LogInformation("[Cache] Stored: {Url}", request.RequestUri);
                 }
 

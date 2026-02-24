@@ -214,24 +214,24 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
                 entity.CreatedById = 0;
             }
 
-            await _newsArticleRepository.AddAsync(entity);
-            await _newsArticleRepository.SaveChangesAsync();
+            _context.NewsArticles.Add(entity);
+            await _context.SaveChangesAsync();
 
             // Add tags
             if (dto.TagIds != null && dto.TagIds.Any())
             {
-                var saved = await _newsArticleRepository.GetByIdAsync(entity.NewsArticleId);
+                var saved = await _context.NewsArticles.Include(x => x.Tags).FirstOrDefaultAsync(x => x.NewsArticleId == entity.NewsArticleId);
                 if (saved != null)
                 {
                     foreach (var tagId in dto.TagIds)
                     {
-                        var tag = await _tagRepository.GetByIdAsync(tagId);
-                        if (tag != null)
+                        var tag = await _context.Tags.FindAsync(tagId);
+                        if (tag != null && !saved.Tags.Any(t => t.TagId == tagId))
                         {
                             saved.Tags.Add(tag);
                         }
                     }
-                    await _newsArticleRepository.SaveChangesAsync();
+                    await _context.SaveChangesAsync();
                 }
             }
 
@@ -260,7 +260,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
             if (string.IsNullOrWhiteSpace(dto.Headline))
                 return ApiResponse<NewsArticleDto>.Fail("Headline is required");
 
-            var existing = await _newsArticleRepository.GetByIdAsync(dto.NewsArticleId);
+            var existing = await _context.NewsArticles.Include(x => x.Tags).FirstOrDefaultAsync(x => x.NewsArticleId == dto.NewsArticleId);
             if (existing == null)
                 return ApiResponse<NewsArticleDto>.Fail("News article not found");
 
@@ -270,7 +270,10 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
             existing.NewsSource = dto.NewsSource;
             existing.CategoryId = dto.CategoryId;
             existing.NewsStatus = dto.NewsStatus;
-            existing.ImageUrl = dto.ImageUrl;
+            if (!string.IsNullOrEmpty(dto.ImageUrl))
+            {
+                existing.ImageUrl = dto.ImageUrl;
+            }
             existing.ModifiedDate = DateTime.Now;
 
             var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -289,7 +292,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
             {
                 foreach (var tagId in dto.TagIds)
                 {
-                    var tag = await _tagRepository.GetByIdAsync(tagId);
+                    var tag = await _context.Tags.FindAsync(tagId);
                     if (tag != null)
                     {
                         existing.Tags.Add(tag);
@@ -297,7 +300,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
                 }
             }
 
-            await _newsArticleRepository.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
             var message = $"Article updated: {existing.NewsTitle}";
             _context.Notifications.Add(new Notification
@@ -322,7 +325,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
         {
             try
             {
-                var original = await _newsArticleRepository.GetByIdAsync(id);
+                var original = await _context.NewsArticles.Include(x => x.Tags).FirstOrDefaultAsync(x => x.NewsArticleId == id);
                 if (original == null)
                     return ApiResponse<NewsArticleDto>.Fail("News article not found");
 
@@ -337,6 +340,7 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
                     NewsSource = original.NewsSource,
                     CategoryId = original.CategoryId,
                     NewsStatus = original.NewsStatus,
+                    ImageUrl = original.ImageUrl,
                     CreatedDate = DateTime.Now
                 };
 
@@ -346,23 +350,23 @@ namespace NguyenDucManh_SE1884_A01_BE.Services
                     duplicate.CreatedById = accountId;
                 }
 
-                await _newsArticleRepository.AddAsync(duplicate);
-                await _newsArticleRepository.SaveChangesAsync();
+                _context.NewsArticles.Add(duplicate);
+                await _context.SaveChangesAsync();
 
                 if (tagIds.Any())
                 {
-                    var saved = await _newsArticleRepository.GetByIdAsync(duplicate.NewsArticleId);
+                    var saved = await _context.NewsArticles.Include(x => x.Tags).FirstOrDefaultAsync(x => x.NewsArticleId == duplicate.NewsArticleId);
                     if (saved != null)
                     {
                         foreach (var tagId in tagIds)
                         {
-                            var tag = await _tagRepository.GetByIdAsync(tagId);
-                            if (tag != null)
+                            var tag = await _context.Tags.FindAsync(tagId);
+                            if (tag != null && !saved.Tags.Any(t => t.TagId == tagId))
                             {
                                 saved.Tags.Add(tag);
                             }
                         }
-                        await _newsArticleRepository.SaveChangesAsync();
+                        await _context.SaveChangesAsync();
                     }
                 }
 
